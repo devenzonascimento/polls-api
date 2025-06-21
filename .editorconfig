@@ -329,6 +329,9 @@ dotnet_diagnostic.CS8604.severity = none
 dotnet_diagnostic.CA1305.severity = none
 dotnet_diagnostic.SA1649.severity = none
 
+# SA1010: Opening square brackets should be spaced correctly
+dotnet_diagnostic.SA1010.severity = none
+
 [*.{cs,vb}]
 end_of_line = crlf
 dotnet_style_qualification_for_field = false:silent
