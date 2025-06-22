@@ -44,10 +44,10 @@ public class AuthService : IAuthService
 
         var claims = new[]
         {
-                new Claim(JwtRegisteredClaimNames.Sub, (string)user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, (string)user.Email),
-                new Claim("username", (string)user.Username),
-            };
+            new Claim(JwtRegisteredClaimNames.Sub, (string)user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, (string)user.Email),
+            new Claim("username", (string)user.Username),
+        };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
