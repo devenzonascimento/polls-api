@@ -16,13 +16,15 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register(RegisterRequest req)
     {
         await authService.RegisterAsync(req.Username, req.Email, req.Password).ConfigureAwait(false);
-        return Ok(new { message = "Registrado com sucesso." });
+
+        return Ok();
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest req)
     {
         var token = await authService.LoginAsync(req.Email, req.Password).ConfigureAwait(false);
+
         return Ok(new { token });
     }
 }
