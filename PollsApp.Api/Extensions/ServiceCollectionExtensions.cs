@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using PollsApp.Application.Services;
 using PollsApp.Application.Services.Interfaces;
+using PollsApp.Infrastructure.Data.Infrastructure;
 using PollsApp.Infrastructure.Data.Repositories;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 using StackExchange.Redis;
@@ -18,9 +19,16 @@ namespace PollsApp.Api.Extensions
     {
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration config)
         {
+            var readOnly = config.GetConnectionString("PostgreSqlReadOnly");
+            var readWrite = config.GetConnectionString("PostgreSqlReadWrite");
+
+            PostgresConnectionSingleton
+                .SetConnectionStrings(readOnly, readWrite);
+
             services.AddScoped<IDbConnection>(sp =>
-                new NpgsqlConnection(config.GetConnectionString("PostgreSql"))
+                PostgresConnectionSingleton.GetWriteConnection()
             );
+
             return services;
         }
 
@@ -75,12 +83,16 @@ namespace PollsApp.Api.Extensions
         {
             // MediatR
             services.AddMediatR(cfg =>
-                cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly)
-            );
+            {
+                cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(AuthService).Assembly);
+            });
 
             // Seus repositórios, serviços de domínio, auth, etc.
-            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IPollRepository, PollRepository>();
+            services.AddScoped<IPollOptionRepository, PollOptionRepository>();
 
             return services;
         }
