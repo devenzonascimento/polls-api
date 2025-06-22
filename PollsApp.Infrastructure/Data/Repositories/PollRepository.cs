@@ -37,8 +37,11 @@ public class PollDao : IBaseDao<Poll>
     public Guid id { get; set; }
     public string title { get; set; }
     public string description { get; set; }
+    public bool active { get; set; }
+    public bool deleted { get; set; }
+    public Guid created_by { get; set; }
     public DateTime created_at { get; set; }
-    public string status { get; set; }
+    public DateTime? closes_at { get; set; }
     #pragma warning restore CA1707 // Identificadores não devem conter sublinhados
     #pragma warning restore SA1300 // Element should begin with upper-case letter
     #pragma warning restore IDE1006 // Estilos de Nomenclatura
@@ -52,10 +55,13 @@ public class PollDao : IBaseDao<Poll>
         id = domain.Id;
         title = domain.Title;
         description = domain.Description;
+        active = domain.Active;
+        deleted = domain.Deleted;
+        created_by = domain.CreatedBy;
         created_at = domain.CreatedAt;
-        status = domain.Status;
+        closes_at = domain.ClosesAt;
     }
 
     public Poll Export()
-        => new Poll(id, title, description, created_at, status);
+        => new Poll(id, title, description, active, deleted, created_by, created_at, closes_at);
 }

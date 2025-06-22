@@ -12,11 +12,16 @@ public class CreatePollsTable : Migration
             Create.Table("polls")
                 .WithColumn("id").AsGuid().PrimaryKey()
                 .WithColumn("title").AsString(200).NotNullable()
-                .WithColumn("description").AsString(int.MaxValue).Nullable()
-                .WithColumn("status").AsString(50).NotNullable()
+                .WithColumn("description").AsString(500).Nullable()
+                .WithColumn("active").AsBoolean().NotNullable().WithDefaultValue(true)
+                .WithColumn("deleted").AsBoolean().NotNullable().WithDefaultValue(false)
                 .WithColumn("created_by").AsGuid().NotNullable()
-                .WithColumn("created_at").AsDateTime().NotNullable()
+                .WithColumn("created_at").AsDateTime().NotNullable().WithDefaultValue(DateTime.Now)
                 .WithColumn("closes_at").AsDateTime().Nullable();
+
+            Create.ForeignKey()
+                .FromTable("polls").ForeignColumn("created_by")
+                .ToTable("users").PrimaryColumn("id");
         }
     }
 

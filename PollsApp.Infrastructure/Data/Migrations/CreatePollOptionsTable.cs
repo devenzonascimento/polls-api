@@ -12,11 +12,14 @@ public class CreatePollOptionsTable : Migration
             Create.Table("poll_options")
                 .WithColumn("id").AsGuid().PrimaryKey()
                 .WithColumn("poll_id").AsGuid().NotNullable()
-                .WithColumn("text").AsString(int.MaxValue).NotNullable();
+                .WithColumn("text").AsString(255).NotNullable();
 
             Create.ForeignKey()
                 .FromTable("poll_options").ForeignColumn("poll_id")
                 .ToTable("polls").PrimaryColumn("id");
+
+            Create.UniqueConstraint()
+                .OnTable("poll_options").Columns("poll_id", "text");
         }
     }
 

@@ -13,8 +13,8 @@ public class CreateVotesTable : Migration
                 .WithColumn("id").AsGuid().PrimaryKey()
                 .WithColumn("poll_id").AsGuid().NotNullable()
                 .WithColumn("poll_option_id").AsGuid().NotNullable()
-                .WithColumn("user_id").AsGuid().Nullable()
-                .WithColumn("voted_at").AsDateTime().NotNullable();
+                .WithColumn("user_id").AsGuid().NotNullable()
+                .WithColumn("voted_at").AsDateTime().NotNullable().WithDefaultValue(DateTime.Now);
 
             Create.ForeignKey()
                 .FromTable("votes").ForeignColumn("poll_id")
@@ -23,6 +23,10 @@ public class CreateVotesTable : Migration
             Create.ForeignKey()
                 .FromTable("votes").ForeignColumn("poll_option_id")
                 .ToTable("poll_options").PrimaryColumn("id");
+
+            Create.ForeignKey()
+                .FromTable("votes").ForeignColumn("user_id")
+                .ToTable("users").PrimaryColumn("id");
         }
     }
 

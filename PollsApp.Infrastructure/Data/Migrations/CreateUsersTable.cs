@@ -12,9 +12,10 @@ public class CreateUsersTable : Migration
             Create.Table("users")
                 .WithColumn("id").AsGuid().PrimaryKey()
                 .WithColumn("username").AsString(100).NotNullable()
-                .WithColumn("email").AsString(200).NotNullable()
+                .WithColumn("email").AsString(200).Unique().NotNullable()
                 .WithColumn("password_hash").AsString(int.MaxValue).NotNullable()
-                .WithColumn("created_at").AsDateTime().NotNullable();
+                .WithColumn("deleted").AsBoolean().NotNullable().WithDefaultValue(false)
+                .WithColumn("created_at").AsDateTime().NotNullable().WithDefaultValue(DateTime.Now);
         }
     }
 

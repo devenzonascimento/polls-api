@@ -6,9 +6,16 @@ public class PollOption
     public Guid PollId { get; private set; }
     public string Text { get; private set; }
 
+    public PollOption(Guid id, Guid pollId, string text)
+    {
+        Id = id;
+        PollId = pollId;
+        Text = text;
+    }
+
     public PollOption(Guid pollId, string text)
     {
-        Id = Guid.NewGuid();
+        Id = Guid.Empty;
         PollId = pollId;
         Text = text;
     }
