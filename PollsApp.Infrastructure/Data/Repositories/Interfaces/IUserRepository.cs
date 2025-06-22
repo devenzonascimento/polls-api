@@ -2,7 +2,7 @@
 
 namespace PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
-public interface IUserRepository
+public interface IUserRepository : IBaseRepository<IUserRepository>
 {
     Task<User> SaveAsync(User user);
     Task<IEnumerable<User>> SaveAsync(IEnumerable<User> users);
