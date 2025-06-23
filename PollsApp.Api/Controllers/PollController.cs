@@ -5,58 +5,56 @@ using PollsApp.Api.DTOs.Poll;
 using PollsApp.Api.Extensions;
 using PollsApp.Application.Commands;
 using PollsApp.Application.Queries;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
-namespace PollsApp.Api.Controllers
+namespace PollsApp.Api.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/poll")]
+public class PollController : ControllerBase
 {
-    [Authorize]
-    [ApiController]
-    [Route("api/poll")]
-    public class PollController : ControllerBase
+    private readonly IMediator mediator;
+
+    public PollController(IMediator mediator)
     {
-        private readonly IMediator mediator;
+        this.mediator = mediator;
+    }
 
-        public PollController(IMediator mediator, IPollOptionRepository pollRepository, IPollOptionRepository optionRepository)
-        {
-            this.mediator = mediator;
-        }
+    [HttpGet]
+    public async Task<IActionResult> GetAllPolls()
+    {
+        var query = new GetAllPollsQuery();
 
-        [HttpPost]
-        public async Task<IActionResult> CreatePoll([FromBody] CreatePollRequest request)
-        {
-            var userRequesterId = User.GetUserId();
+        var polls = await mediator.Send(query).ConfigureAwait(false);
 
-            var command = new CreatePollCommand(
-                userRequesterId,
-                request.Title,
-                request.Description,
-                request.ClosesAt,
-                request.Options
-            );
+        return Ok(polls);
+    }
 
-            var pollId = await mediator.Send(command).ConfigureAwait(false);
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetPollById(Guid id)
+    {
+        var query = new GetPollByIdQuery(id);
 
-            return CreatedAtAction(nameof(GetPollById), new { id = pollId }, new { id = pollId });
-        }
+        var pollSummary = await mediator.Send(query).ConfigureAwait(false);
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllPolls()
-        {
-            var query = new GetAllPollsQuery();
+        return Ok(pollSummary);
+    }
 
-            var polls = await mediator.Send(query).ConfigureAwait(false);
+    [HttpPost]
+    public async Task<IActionResult> CreatePoll([FromBody] CreatePollRequest request)
+    {
+        var userRequesterId = User.GetUserId();
 
-            return Ok(polls);
-        }
+        var command = new CreatePollCommand(
+            userRequesterId,
+            request.Title,
+            request.Description,
+            request.ClosesAt,
+            request.Options
+        );
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetPollById(Guid id)
-        {
-            var query = new GetPollByIdQuery(id);
+        var pollId = await mediator.Send(command).ConfigureAwait(false);
 
-            var pollSummary = await mediator.Send(query).ConfigureAwait(false);
-
-            return Ok(pollSummary);
-        }
+        return CreatedAtAction(nameof(GetPollById), new { id = pollId }, new { id = pollId });
     }
 }
