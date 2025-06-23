@@ -36,11 +36,21 @@ namespace PollsApp.Api.Controllers
 
             var pollId = await mediator.Send(command).ConfigureAwait(false);
 
-            return CreatedAtAction(nameof(GetPoll), new { id = pollId }, new { id = pollId });
+            return CreatedAtAction(nameof(GetPollById), new { id = pollId }, new { id = pollId });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllPolls()
+        {
+            var query = new GetAllPollsQuery();
+
+            var polls = await mediator.Send(query).ConfigureAwait(false);
+
+            return Ok(polls);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetPoll(Guid id)
+        public async Task<IActionResult> GetPollById(Guid id)
         {
             var query = new GetPollByIdQuery(id);
 

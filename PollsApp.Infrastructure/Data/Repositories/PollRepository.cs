@@ -17,6 +17,15 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
     public async Task<IEnumerable<Poll>> SaveAsync(IEnumerable<Poll> polls)
         => await SaveAsync<Poll, PollDao>(polls, Transaction).ConfigureAwait(false);
 
+    public async Task<IEnumerable<Poll>> GetAllAsync()
+    {
+        var sql = "SELECT * FROM polls WHERE deleted = false;";
+
+        var pollsDao = await Connection.QueryAsync<PollDao>(sql).ConfigureAwait(false);
+
+        return pollsDao.Select(p => p.Export());
+    }
+
     public async Task<Poll?> GetByIdAsync(Guid id)
     {
         var sql = "SELECT * FROM polls WHERE id = @id;";

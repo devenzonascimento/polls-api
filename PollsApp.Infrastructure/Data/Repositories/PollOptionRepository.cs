@@ -21,18 +21,30 @@ public class PollOptionRepository : BaseRepository<PollOptionRepository, IPollOp
     {
         var sql = "SELECT * FROM poll_options WHERE id = @id;";
 
-        var pollDao = await Connection.QuerySingleOrDefaultAsync<PollOptionDao>(sql, new { id }).ConfigureAwait(false);
+        var pollOptionsDao = await Connection.QuerySingleOrDefaultAsync<PollOptionDao>(sql, new { id }).ConfigureAwait(false);
 
-        return pollDao?.Export();
+        return pollOptionsDao?.Export();
     }
 
     public async Task<IEnumerable<PollOption>> GetByPollIdAsync(Guid pollId)
     {
         var sql = "SELECT * FROM poll_options WHERE poll_id = @pollId;";
 
-        var pollsDao = await Connection.QueryAsync<PollOptionDao>(sql, new { pollId }).ConfigureAwait(false);
+        var pollOptionsDao = await Connection.QueryAsync<PollOptionDao>(sql, new { pollId }).ConfigureAwait(false);
 
-        return pollsDao.Select(p => p.Export());
+        return pollOptionsDao.Select(p => p.Export());
+    }
+
+    public async Task<IEnumerable<PollOption>> GetByPollsIdsAsync(IList<Guid> pollsIds)
+    {
+        if (pollsIds == null || !pollsIds.Any())
+            return [];
+
+        var sql = "SELECT * FROM poll_options WHERE poll_id = ANY(@pollsIds);";
+
+        var pollOptionsDao = await Connection.QueryAsync<PollOptionDao>(sql, new { pollsIds = pollsIds.ToArray() }).ConfigureAwait(false);
+
+        return pollOptionsDao.Select(p => p.Export());
     }
 }
 
