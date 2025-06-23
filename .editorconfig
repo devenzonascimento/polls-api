@@ -343,3 +343,4 @@ dotnet_style_require_accessibility_modifiers = for_non_interface_members:silent
 dotnet_style_prefer_inferred_tuple_names = true:suggestion
 dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
 dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.CA2227.severity = none

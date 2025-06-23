@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using PollsApp.Api.DTOs.Poll;
 using PollsApp.Api.Extensions;
 using PollsApp.Application.Commands;
+using PollsApp.Application.Queries;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
 namespace PollsApp.Api.Controllers
@@ -35,29 +36,17 @@ namespace PollsApp.Api.Controllers
 
             var pollId = await mediator.Send(command).ConfigureAwait(false);
 
-            return Created();
-            //return CreatedAtAction(nameof(GetPoll), new { id = pollId }, new { id = pollId });
+            return CreatedAtAction(nameof(GetPoll), new { id = pollId }, new { id = pollId });
         }
 
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetPoll(Guid id)
-        //{
-        //    var poll = await pollRepository.GetByIdAsync(id).ConfigureAwait(false);
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPoll(Guid id)
+        {
+            var query = new GetPollByIdQuery(id);
 
-        //    if (poll is null)
-        //        return NotFound();
+            var pollSummary = await mediator.Send(query).ConfigureAwait(false);
 
-        //    //var options = await _optionRepository.GetByPollIdAsync(id);
-
-        //    return Ok(new
-        //    {
-        //        poll.Id,
-        //        poll.Title,
-        //        poll.Description,
-        //        poll.Status,
-        //        poll.CreatedAt,
-        //        //Options = options.Select(o => new { o.Id, o.Text })
-        //    });
-        //}
+            return Ok(pollSummary);
+        }
     }
 }
