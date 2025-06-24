@@ -57,4 +57,23 @@ public class PollController : ControllerBase
 
         return CreatedAtAction(nameof(GetPollById), new { id = pollId }, new { id = pollId });
     }
+
+    [HttpPut]
+    public async Task<IActionResult> UpdatePoll([FromBody] UpdatePollRequest request)
+    {
+        var userRequesterId = User.GetUserId();
+
+        var command = new UpdatePollCommand(
+            userRequesterId,
+            request.PollId,
+            request?.Title,
+            request?.Description,
+            request?.ClosesAt,
+            request?.Options.Select(o => new Application.Commands.OptionToUpdateData(o.OldText, o.NewText))
+        );
+
+        await mediator.Send(command).ConfigureAwait(false);
+
+        return Ok();
+    }
 }

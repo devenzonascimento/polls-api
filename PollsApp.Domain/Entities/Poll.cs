@@ -47,4 +47,17 @@ public class Poll
     {
         Description = description;
     }
+
+    public void Update(string title, string description, DateTime? closesAt)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title cannot be empty.", nameof(title));
+
+        if (closesAt != null && closesAt <= DateTime.UtcNow)
+            throw new ArgumentException("ClosesAt must be in the future.", nameof(closesAt));
+
+        Title = title;
+        Description = description;
+        ClosesAt = closesAt;
+    }
 }
