@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using PollsApp.Application.Services;
 using PollsApp.Application.Services.Interfaces;
-using PollsApp.Infrastructure.Data.Infrastructure;
 using PollsApp.Infrastructure.Data.Repositories;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 using StackExchange.Redis;

@@ -331,6 +331,7 @@ dotnet_diagnostic.SA1649.severity = none
 
 # SA1010: Opening square brackets should be spaced correctly
 dotnet_diagnostic.SA1010.severity = none
+dotnet_diagnostic.SA1202.severity = none
 
 [*.{cs,vb}]
 end_of_line = crlf

@@ -15,13 +15,11 @@ public class GetPollByIdQueryHandler : IRequestHandler<GetPollByIdQuery, PollSum
 
     public async Task<PollSummary> Handle(GetPollByIdQuery request, CancellationToken cancellationToken)
     {
-        var poll = await pollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false);
+        var pollSummary = await pollRepository.GetPollSummaryAsync(request.PollId).ConfigureAwait(false);
 
-        if (poll == null)
+        if (pollSummary == null)
             throw new ArgumentException($"Poll with ID {request.PollId} not found.");
 
-        var options = await pollRepository.GetOptionsByPollIdAsync(request.PollId).ConfigureAwait(false);
-
-        return new PollSummary(poll, options);
+        return pollSummary;
     }
 }

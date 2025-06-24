@@ -15,10 +15,6 @@ public class GetAllPollsQueryHandler : IRequestHandler<GetAllPollsQuery, IEnumer
 
     public async Task<IEnumerable<PollSummary>> Handle(GetAllPollsQuery request, CancellationToken cancellationToken)
     {
-        var polls = await pollRepository.GetAllAsync().ConfigureAwait(false);
-
-        var options = await pollRepository.GetOptionsByPollsIdsAsync(polls.Select(p => p.Id).ToList()).ConfigureAwait(false);
-
-        return polls.Select(p => new PollSummary(p, options.Where(o => o.PollId == p.Id)));
+        return await pollRepository.GetPollsSummariesAsync().ConfigureAwait(false);
     }
 }

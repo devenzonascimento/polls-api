@@ -1,6 +1,8 @@
 ﻿using System.Data;
+using System.Transactions;
 using Dapper;
 using Dapper.Contrib.Extensions;
+using PollsApp.Domain.Aggregates;
 using PollsApp.Domain.Entities;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
@@ -69,6 +71,102 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
         var pollOptionsDao = await Connection.QueryAsync<PollOptionDao>(sql, new { pollsIds = pollsIds.ToArray() }).ConfigureAwait(false);
 
         return pollOptionsDao.Select(p => p.Export());
+    }
+
+    public async Task<PollSummary> GetPollSummaryAsync(Guid pollId)
+    {
+        var sql = @"
+            SELECT
+                p.id AS Id,
+                p.title AS Title,
+                p.description AS Description,
+                p.active AS Active,
+                p.created_by AS CreatedBy,
+                p.created_at AS CreatedAt,
+                p.closes_at AS ClosesAt
+            FROM
+                polls p
+            WHERE
+                p.id = @pollId  
+                AND p.deleted = false
+        ";
+
+        var pollSummary = await Connection.QuerySingleOrDefaultAsync<PollSummary>(sql, param: new { pollId }).ConfigureAwait(false);
+
+        if (pollSummary == null)
+            return null;
+
+        var pollsSummariesWithOptions = await GetPollsSummariesWithOptionsAsync([pollSummary]).ConfigureAwait(false);
+
+        return pollsSummariesWithOptions.FirstOrDefault();
+    }
+
+    public async Task<IEnumerable<PollSummary>> GetPollsSummariesAsync()
+    {
+        var sql = @"
+            SELECT
+                p.id AS Id,
+                p.title AS Title,
+                p.description AS Description,
+                p.active AS Active,
+                p.created_by AS CreatedBy,
+                p.created_at AS CreatedAt,
+                p.closes_at AS ClosesAt
+            FROM
+                polls p
+            WHERE
+                p.deleted = false
+        ";
+
+        var pollsSummaries = await Connection.QueryAsync<PollSummary>(sql).ConfigureAwait(false);
+
+        var pollsSummariesWithOptions = await GetPollsSummariesWithOptionsAsync(pollsSummaries).ConfigureAwait(false);
+
+        return pollsSummariesWithOptions;
+    }
+
+    private async Task<IEnumerable<PollSummary>> GetPollsSummariesWithOptionsAsync(IEnumerable<PollSummary> pollsSummaries)
+    {
+        var sql = $@"
+            SELECT
+                po.poll_id AS PollId,
+                po.id AS Id,
+                po.text AS Text,
+                count(v.id) AS VotesCount
+            FROM 
+                poll_options po
+            INNER JOIN votes v ON
+                po.id = v.poll_option_id
+                AND po.poll_id = ANY(@pollsIds)
+            GROUP BY po.id
+        ";
+
+        var pollsDictionary = new Dictionary<Guid, List<PollOptionSummary>>();
+
+        var pollOptionsSummaries = await Connection.QueryAsync<Guid, PollOptionSummary, Guid>(
+            sql,
+            (pollId, pollOptionSummary) =>
+            {
+                if (!pollsDictionary.TryGetValue(pollId, out var groupEntry))
+                {
+                    groupEntry = new List<PollOptionSummary>();
+                    pollsDictionary.Add(pollId, groupEntry);
+                }
+
+                groupEntry.Add(pollOptionSummary);
+
+                return pollId;
+            },
+            param: new { pollsIds = pollsSummaries.Select(p => p.Id).ToArray() },
+            splitOn: "Id"
+        ).ConfigureAwait(false);
+
+        foreach (var pollSummary in pollsSummaries)
+        {
+            pollSummary.Options = pollsDictionary.GetValueOrDefault(pollSummary.Id) ?? [];
+        }
+
+        return pollsSummaries;
     }
 
     public async Task DeleteOptionByIdAsync(Guid id)

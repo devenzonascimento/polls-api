@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using PollsApp.Domain.Entities;
-using PollsApp.Infrastructure.Data.Infrastructure;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
 namespace PollsApp.Application.Commands.Handlers;

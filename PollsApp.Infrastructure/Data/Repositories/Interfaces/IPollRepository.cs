@@ -1,4 +1,5 @@
-﻿using PollsApp.Domain.Entities;
+﻿using PollsApp.Domain.Aggregates;
+using PollsApp.Domain.Entities;
 
 namespace PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
@@ -13,6 +14,8 @@ public interface IPollRepository : IBaseRepository<IPollRepository>
     Task<PollOption?> GetOptionByIdAsync(Guid id);
     Task<IEnumerable<PollOption>> GetOptionsByPollsIdsAsync(IList<Guid> pollsIds);
     Task<IEnumerable<PollOption>> GetOptionsByPollIdAsync(Guid pollId);
+    Task<IEnumerable<PollSummary>> GetPollsSummariesAsync();
+    Task<PollSummary> GetPollSummaryAsync(Guid pollId);
     Task DeleteOptionByIdAsync(Guid id);
     Task DeleteOptionsByIdsAsync(IEnumerable<Guid> ids);
 }
