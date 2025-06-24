@@ -22,11 +22,8 @@ namespace PollsApp.Api.Extensions
             var readOnly = config.GetConnectionString("PostgreSqlReadOnly");
             var readWrite = config.GetConnectionString("PostgreSqlReadWrite");
 
-            PostgresConnectionSingleton
-                .SetConnectionStrings(readOnly, readWrite);
-
             services.AddScoped<IDbConnection>(sp =>
-                PostgresConnectionSingleton.GetWriteConnection()
+                new NpgsqlConnection(config.GetConnectionString("PostgreSql"))
             );
 
             return services;

@@ -64,7 +64,7 @@ public class UpdatePollCommandHandler : IRequestHandler<UpdatePollCommand, Guid>
 
         poll.Update(request.Title, request.Description, request.ClosesAt);
 
-        using (var transaction = PostgresConnectionSingleton.GetWriteConnection().BeginTransaction())
+        using (var transaction = pollRepository.StartTransaction())
         {
             try
             {

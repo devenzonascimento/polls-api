@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using Dapper;
 using Dapper.Contrib.Extensions;
 
 namespace PollsApp.Infrastructure.Data.Repositories;
@@ -17,6 +18,12 @@ public abstract class BaseRepository<TRepoClass, TRepoInterface>
     }
 
     public IDbConnection GetConnection() => Connection;
+
+    public IDbTransaction StartTransaction()
+    {
+        Connection.Open();
+        return Connection.BeginTransaction();
+    }
 
     /// <summary>
     /// Cria uma nova instância do repositório com transação.

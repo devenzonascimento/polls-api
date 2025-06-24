@@ -18,7 +18,7 @@ public class CreatePollCommandHandler : IRequestHandler<CreatePollCommand, Guid>
     {
         var poll = new Poll(request.Title, request.Description, request.UserRequesterId, request.ClosesAt);
 
-        using (var transaction = PostgresConnectionSingleton.GetWriteConnection().BeginTransaction())
+        using (var transaction = pollRepository.StartTransaction())
         {
             try
             {
