@@ -7,12 +7,10 @@ namespace PollsApp.Application.Queries.Handlers;
 public class GetPollByIdQueryHandler : IRequestHandler<GetPollByIdQuery, PollSummary>
 {
     private readonly IPollRepository pollRepository;
-    private readonly IPollOptionRepository pollOptionRepository;
 
-    public GetPollByIdQueryHandler(IPollRepository pollRepository, IPollOptionRepository pollOptionRepository)
+    public GetPollByIdQueryHandler(IPollRepository pollRepository)
     {
         this.pollRepository = pollRepository;
-        this.pollOptionRepository = pollOptionRepository;
     }
 
     public async Task<PollSummary> Handle(GetPollByIdQuery request, CancellationToken cancellationToken)
@@ -20,11 +18,9 @@ public class GetPollByIdQueryHandler : IRequestHandler<GetPollByIdQuery, PollSum
         var poll = await pollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false);
 
         if (poll == null)
-        {
-            throw new KeyNotFoundException($"Poll with ID {request.PollId} not found.");
-        }
+            throw new ArgumentException($"Poll with ID {request.PollId} not found.");
 
-        var options = await pollOptionRepository.GetByPollIdAsync(request.PollId).ConfigureAwait(false);
+        var options = await pollRepository.GetOptionsByPollIdAsync(request.PollId).ConfigureAwait(false);
 
         return new PollSummary(poll, options);
     }

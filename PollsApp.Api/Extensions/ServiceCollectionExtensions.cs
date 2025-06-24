@@ -92,7 +92,6 @@ namespace PollsApp.Api.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPollRepository, PollRepository>();
-            services.AddScoped<IPollOptionRepository, PollOptionRepository>();
             services.AddScoped<IVoteRepository, VoteRepository>();
 
             return services;

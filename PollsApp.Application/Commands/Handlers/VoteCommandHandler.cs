@@ -7,19 +7,17 @@ namespace PollsApp.Application.Commands.Handlers;
 public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
 {
     private readonly IPollRepository pollRepository;
-    private readonly IPollOptionRepository pollOptionRepository;
     private readonly IVoteRepository voteRepository;
 
-    public VoteCommandHandler(IPollRepository pollRepository, IPollOptionRepository pollOptionRepository, IVoteRepository voteRepository)
+    public VoteCommandHandler(IPollRepository pollRepository, IVoteRepository voteRepository)
     {
         this.pollRepository = pollRepository;
-        this.pollOptionRepository = pollOptionRepository;
         this.voteRepository = voteRepository;
     }
 
     public async Task<bool> Handle(VoteCommand request, CancellationToken cancellationToken)
     {
-        var option = await pollOptionRepository.GetByIdAsync(request.OptionId).ConfigureAwait(false);
+        var option = await pollRepository.GetOptionByIdAsync(request.OptionId).ConfigureAwait(false);
 
         if (option == null)
             throw new ArgumentException("Option not found.");
