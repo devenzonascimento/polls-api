@@ -27,7 +27,7 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
         if (poll == null)
             throw new ArgumentException("Poll not found.");
 
-        if (!poll.Active)
+        if (!poll.IsOpen)
             throw new ArgumentException("This poll is closed");
 
         var existingVote = await voteRepository.FindUserVote(option.PollId, request.UserId).ConfigureAwait(false);

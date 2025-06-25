@@ -14,7 +14,7 @@ public class CreateVotesTable : Migration
                 .WithColumn("poll_id").AsGuid().NotNullable()
                 .WithColumn("poll_option_id").AsGuid().NotNullable()
                 .WithColumn("user_id").AsGuid().NotNullable()
-                .WithColumn("voted_at").AsDateTime().NotNullable().WithDefaultValue(DateTime.Now);
+                .WithColumn("voted_at").AsDateTime().NotNullable().WithDefault(SystemMethods.CurrentUTCDateTime);
 
             Create.ForeignKey()
                 .FromTable("votes").ForeignColumn("poll_id")

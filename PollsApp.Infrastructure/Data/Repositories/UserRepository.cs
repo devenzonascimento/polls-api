@@ -49,7 +49,7 @@ public class UserDao : IBaseDao<User>
     public string username { get; set; }
     public string email { get; set; }
     public string password_hash { get; set; }
-    public bool deleted { get; set; }
+    public bool is_deleted { get; set; }
     public DateTime created_at { get; set; }
     #pragma warning restore CA1707 // Identificadores não devem conter sublinhados
     #pragma warning restore SA1300 // Element should begin with upper-case letter
@@ -65,13 +65,13 @@ public class UserDao : IBaseDao<User>
         username = domain.Username;
         email = domain.Email;
         password_hash = domain.PasswordHash;
-        deleted = domain.Deleted;
+        is_deleted = domain.IsDeleted;
         created_at = domain.CreatedAt;
     }
 
     public User Export()
     {
         // Aqui você pode usar um construtor ou factory de Poll
-        return new User(id, username, email, password_hash, deleted, created_at);
+        return new User(id, username, email, password_hash, is_deleted, created_at);
     }
 }

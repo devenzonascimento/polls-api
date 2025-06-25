@@ -5,21 +5,23 @@ public class Poll
     public Guid Id { get; private set; }
     public string Title { get; private set; }
     public string Description { get; private set; }
-    public bool Active { get; private set; }
-    public bool Deleted { get; private set; }
+    public bool IsOpen { get; private set; }
+    public bool IsDeleted { get; private set; }
     public Guid CreatedBy { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public DateTime? ClosedAt { get; private set; }
     public DateTime? ClosesAt { get; private set; }
 
-    public Poll(Guid id, string title, string description, bool active, bool deleted, Guid createdBy, DateTime createdAt, DateTime? closesAt)
+    public Poll(Guid id, string title, string description, bool isOpen, bool isDeleted, Guid createdBy, DateTime createdAt, DateTime? closedAt, DateTime? closesAt)
     {
         Id = id;
         Title = title;
         Description = description;
-        Active = active;
-        Deleted = deleted;
+        IsOpen = isOpen;
+        IsDeleted = isDeleted;
         CreatedBy = createdBy;
         CreatedAt = createdAt;
+        ClosedAt = closedAt;
         ClosesAt = closesAt;
     }
 
@@ -28,24 +30,12 @@ public class Poll
         Id = Guid.Empty;
         Title = title;
         Description = description;
-        Active = true;
-        Deleted = false;
+        IsOpen = true;
+        IsDeleted = false;
         CreatedBy = createdBy;
         CreatedAt = DateTime.UtcNow;
+        ClosedAt = null;
         ClosesAt = closesAt;
-    }
-
-    public void ChangeTitle(string title)
-    {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title cannot be empty.", nameof(title));
-
-        Title = title;
-    }
-
-    public void ChangeDescription(string description)
-    {
-        Description = description;
     }
 
     public void Update(string title, string description, DateTime? closesAt)

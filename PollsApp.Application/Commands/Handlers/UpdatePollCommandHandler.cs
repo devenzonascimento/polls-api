@@ -18,10 +18,10 @@ public class UpdatePollCommandHandler : IRequestHandler<UpdatePollCommand, Guid>
         var poll = await pollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false);
         var pollOptions = await pollRepository.GetOptionsByPollIdAsync(request.PollId).ConfigureAwait(false);
 
-        if (poll == null || poll.Deleted)
+        if (poll == null || poll.IsDeleted)
             throw new ArgumentException($"Poll with ID {request.PollId} not found.");
 
-        if (!poll.Active)
+        if (!poll.IsOpen)
             throw new ArgumentException("This poll is closed.");
 
         if (poll.CreatedBy != request.UserRequesterId)

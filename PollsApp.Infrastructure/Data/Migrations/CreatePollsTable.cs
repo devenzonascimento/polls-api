@@ -13,10 +13,11 @@ public class CreatePollsTable : Migration
                 .WithColumn("id").AsGuid().PrimaryKey()
                 .WithColumn("title").AsString(200).NotNullable()
                 .WithColumn("description").AsString(500).Nullable()
-                .WithColumn("active").AsBoolean().NotNullable().WithDefaultValue(true)
-                .WithColumn("deleted").AsBoolean().NotNullable().WithDefaultValue(false)
+                .WithColumn("is_open").AsBoolean().NotNullable().WithDefaultValue(true)
+                .WithColumn("is_deleted").AsBoolean().NotNullable().WithDefaultValue(false)
                 .WithColumn("created_by").AsGuid().NotNullable()
-                .WithColumn("created_at").AsDateTime().NotNullable().WithDefaultValue(DateTime.Now)
+                .WithColumn("created_at").AsDateTime().NotNullable().WithDefault(SystemMethods.CurrentUTCDateTime)
+                .WithColumn("closed_at").AsDateTime().Nullable()
                 .WithColumn("closes_at").AsDateTime().Nullable();
 
             Create.ForeignKey()

@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Transactions;
 using Dapper;
 using Dapper.Contrib.Extensions;
 using PollsApp.Domain.Aggregates;
@@ -80,15 +79,16 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
                 p.id AS Id,
                 p.title AS Title,
                 p.description AS Description,
-                p.active AS Active,
+                p.is_open AS IsOpen,
                 p.created_by AS CreatedBy,
                 p.created_at AS CreatedAt,
+                p.closed_at AS ClosedAt,
                 p.closes_at AS ClosesAt
             FROM
                 polls p
             WHERE
                 p.id = @pollId  
-                AND p.deleted = false
+                AND p.is_deleted = false
         ";
 
         var pollSummary = await Connection.QuerySingleOrDefaultAsync<PollSummary>(sql, param: new { pollId }).ConfigureAwait(false);
@@ -108,14 +108,15 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
                 p.id AS Id,
                 p.title AS Title,
                 p.description AS Description,
-                p.active AS Active,
+                p.is_open AS IsOpen,
                 p.created_by AS CreatedBy,
                 p.created_at AS CreatedAt,
+                p.closed_at AS ClosedAt,
                 p.closes_at AS ClosesAt
             FROM
                 polls p
             WHERE
-                p.deleted = false
+                p.is_deleted = false
         ";
 
         var pollsSummaries = await Connection.QueryAsync<PollSummary>(sql).ConfigureAwait(false);
@@ -192,10 +193,11 @@ public class PollDao : IBaseDao<Poll>
     public Guid id { get; set; }
     public string title { get; set; }
     public string description { get; set; }
-    public bool active { get; set; }
-    public bool deleted { get; set; }
+    public bool is_open { get; set; }
+    public bool is_deleted { get; set; }
     public Guid created_by { get; set; }
     public DateTime created_at { get; set; }
+    public DateTime? closed_at { get; set; }
     public DateTime? closes_at { get; set; }
     #pragma warning restore CA1707 // Identificadores não devem conter sublinhados
     #pragma warning restore SA1300 // Element should begin with upper-case letter
@@ -208,15 +210,15 @@ public class PollDao : IBaseDao<Poll>
         id = domain.Id;
         title = domain.Title;
         description = domain.Description;
-        active = domain.Active;
-        deleted = domain.Deleted;
+        is_open = domain.IsOpen;
+        is_deleted = domain.IsDeleted;
         created_by = domain.CreatedBy;
         created_at = domain.CreatedAt;
         closes_at = domain.ClosesAt;
     }
 
     public Poll Export()
-        => new Poll(id, title, description, active, deleted, created_by, created_at, closes_at);
+        => new Poll(id, title, description, is_open, is_deleted, created_by, created_at, closed_at, closes_at);
 }
 
 [Table("poll_options")]
