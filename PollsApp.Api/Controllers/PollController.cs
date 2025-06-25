@@ -31,7 +31,7 @@ public class PollController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetPollById(Guid id)
+    public async Task<IActionResult> GetPollById([FromRoute] Guid id)
     {
         var query = new GetPollByIdQuery(id);
 
@@ -71,6 +71,18 @@ public class PollController : ControllerBase
             request?.ClosesAt,
             request?.Options.Select(o => new Application.Commands.OptionToUpdateData(o.OldText, o.NewText))
         );
+
+        await mediator.Send(command).ConfigureAwait(false);
+
+        return Ok();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeletePoll([FromRoute] Guid id)
+    {
+        var userRequesterId = User.GetUserId();
+
+        var command = new DeletePollCommand(userRequesterId, id);
 
         await mediator.Send(command).ConfigureAwait(false);
 

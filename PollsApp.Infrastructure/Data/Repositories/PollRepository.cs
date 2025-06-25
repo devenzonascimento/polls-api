@@ -214,6 +214,7 @@ public class PollDao : IBaseDao<Poll>
         is_deleted = domain.IsDeleted;
         created_by = domain.CreatedBy;
         created_at = domain.CreatedAt;
+        closed_at = domain.ClosedAt;
         closes_at = domain.ClosesAt;
     }
 

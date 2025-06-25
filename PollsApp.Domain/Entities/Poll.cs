@@ -50,4 +50,17 @@ public class Poll
         Description = description;
         ClosesAt = closesAt;
     }
+
+    public void Close()
+    {
+        IsOpen = false;
+        ClosedAt = DateTime.UtcNow;
+    }
+
+    public void MarkAsDeleted()
+    {
+        IsOpen = false;
+        IsDeleted = true;
+        ClosedAt = DateTime.UtcNow;
+    }
 }
