@@ -10,6 +10,7 @@ using PollsApp.Application.Services;
 using PollsApp.Application.Services.Interfaces;
 using PollsApp.Infrastructure.Data.Repositories;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Infrastructure.Data.Search;
 using StackExchange.Redis;
 
 namespace PollsApp.Api.Extensions
@@ -95,6 +96,7 @@ namespace PollsApp.Api.Extensions
 
             // Seus repositórios, serviços de domínio, auth, etc.
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IPollSearchService, PollSearchService>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPollRepository, PollRepository>();
             services.AddScoped<IVoteRepository, VoteRepository>();
