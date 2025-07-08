@@ -13,6 +13,7 @@ public class CreatePollsTable : Migration
                 .WithColumn("id").AsGuid().PrimaryKey()
                 .WithColumn("title").AsString(200).NotNullable()
                 .WithColumn("description").AsString(500).Nullable()
+                .WithColumn("allow_multiple").AsBoolean().NotNullable()
                 .WithColumn("is_open").AsBoolean().NotNullable().WithDefaultValue(true)
                 .WithColumn("is_deleted").AsBoolean().NotNullable().WithDefaultValue(false)
                 .WithColumn("created_by").AsGuid().NotNullable()

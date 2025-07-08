@@ -12,7 +12,8 @@ public class CreatePollOptionsTable : Migration
             Create.Table("poll_options")
                 .WithColumn("id").AsGuid().PrimaryKey()
                 .WithColumn("poll_id").AsGuid().NotNullable()
-                .WithColumn("text").AsString(255).NotNullable();
+                .WithColumn("text").AsString(255).NotNullable()
+                .WithColumn("order").AsInt16().NotNullable();
 
             Create.ForeignKey()
                 .FromTable("poll_options").ForeignColumn("poll_id")
@@ -20,6 +21,9 @@ public class CreatePollOptionsTable : Migration
 
             Create.UniqueConstraint()
                 .OnTable("poll_options").Columns("poll_id", "text");
+
+            Create.UniqueConstraint()
+                .OnTable("poll_options").Columns("poll_id", "order");
         }
     }
 
