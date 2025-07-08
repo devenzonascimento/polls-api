@@ -79,6 +79,7 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
                 p.id AS Id,
                 p.title AS Title,
                 p.description AS Description,
+                p.allow_multiple AS AllowMultiple,
                 p.is_open AS IsOpen,
                 p.created_by AS CreatedBy,
                 p.created_at AS CreatedAt,
@@ -108,6 +109,7 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
                 p.id AS Id,
                 p.title AS Title,
                 p.description AS Description,
+                p.allow_multiple AS AllowMultiple,
                 p.is_open AS IsOpen,
                 p.created_by AS CreatedBy,
                 p.created_at AS CreatedAt,
@@ -133,6 +135,7 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
                 p.id AS Id,
                 p.title AS Title,
                 p.description AS Description,
+                p.allow_multiple AS AllowMultiple,
                 p.is_open AS IsOpen,
                 p.created_by AS CreatedBy,
                 p.created_at AS CreatedAt,
@@ -221,6 +224,7 @@ public class PollDao : IBaseDao<Poll>
     public Guid id { get; set; }
     public string title { get; set; }
     public string description { get; set; }
+    public bool allow_multiple { get; set; }
     public bool is_open { get; set; }
     public bool is_deleted { get; set; }
     public Guid created_by { get; set; }
@@ -238,6 +242,7 @@ public class PollDao : IBaseDao<Poll>
         id = domain.Id;
         title = domain.Title;
         description = domain.Description;
+        allow_multiple = domain.AllowMultiple;
         is_open = domain.IsOpen;
         is_deleted = domain.IsDeleted;
         created_by = domain.CreatedBy;
@@ -247,7 +252,7 @@ public class PollDao : IBaseDao<Poll>
     }
 
     public Poll Export()
-        => new Poll(id, title, description, is_open, is_deleted, created_by, created_at, closed_at, closes_at);
+        => new Poll(id, title, description, allow_multiple, is_open, is_deleted, created_by, created_at, closed_at, closes_at);
 }
 
 [Table("poll_options")]
@@ -260,6 +265,7 @@ public class PollOptionDao : IBaseDao<PollOption>
     public Guid id { get; set; }
     public Guid poll_id { get; set; }
     public string text { get; set; }
+    public int order { get; set; }
     #pragma warning restore CA1707 // Identificadores não devem conter sublinhados
     #pragma warning restore SA1300 // Element should begin with upper-case letter
     #pragma warning restore IDE1006 // Estilos de Nomenclatura
@@ -271,7 +277,8 @@ public class PollOptionDao : IBaseDao<PollOption>
         id = domain.Id;
         poll_id = domain.PollId;
         text = domain.Text;
+        order = domain.Order;
     }
 
-    public PollOption Export() => new PollOption(id, poll_id, text);
+    public PollOption Export() => new PollOption(id, poll_id, text, order);
 }
