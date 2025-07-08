@@ -59,6 +59,7 @@ public class PollController : ControllerBase
             userRequesterId,
             request.Title,
             request.Description,
+            request.AllowMultiple,
             request.ClosesAt,
             request.Options
         );

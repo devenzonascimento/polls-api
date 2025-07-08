@@ -1,3 +1,9 @@
 ﻿namespace PollsApp.Api.DTOs.Poll;
 
-public record CreatePollRequest(string Title, string Description, DateTime ClosesAt, List<string> Options);
+public record CreatePollRequest(
+    string Title,
+    string Description,
+    bool AllowMultiple,
+    DateTime ClosesAt,
+    List<string> Options
+);

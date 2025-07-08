@@ -5,6 +5,7 @@ public class PollSummary
     public Guid Id { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
+    public bool AllowMultiple { get; set; }
     public bool IsOpen { get; set; }
     public Guid CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -14,11 +15,12 @@ public class PollSummary
 
     public PollSummary() { }
 
-    public PollSummary(Guid id, string title, string description, bool active, Guid createdBy, DateTime createdAt, DateTime closedAt, DateTime? closesAt, IEnumerable<PollOptionSummary> options)
+    public PollSummary(Guid id, string title, string description, bool allowMultiple, bool active, Guid createdBy, DateTime createdAt, DateTime closedAt, DateTime? closesAt, IEnumerable<PollOptionSummary> options)
     {
         Id = id;
         Title = title;
         Description = description;
+        AllowMultiple = allowMultiple;
         IsOpen = active;
         CreatedBy = createdBy;
         CreatedAt = createdAt;

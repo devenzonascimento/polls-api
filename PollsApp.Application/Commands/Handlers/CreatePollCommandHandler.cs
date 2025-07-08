@@ -19,7 +19,7 @@ public class CreatePollCommandHandler : IRequestHandler<CreatePollCommand, Guid>
 
     public async Task<Guid> Handle(CreatePollCommand request, CancellationToken cancellationToken)
     {
-        var poll = new Poll(request.Title, request.Description, request.UserRequesterId, request.ClosesAt);
+        var poll = new Poll(request.Title, request.Description, request.AllowMultiple, request.UserRequesterId, request.ClosesAt);
 
         PollDocument pollDocument;
         using (var transaction = pollRepository.StartTransaction())
@@ -30,7 +30,7 @@ public class CreatePollCommandHandler : IRequestHandler<CreatePollCommand, Guid>
                 poll = await pollRepositoryWithTransaction.SaveAsync(poll).ConfigureAwait(false);
 
                 var options = request.Options
-                    .Select(optionText => new PollOption(poll.Id, optionText))
+                    .Select((optionText, index) => new PollOption(poll.Id, optionText, index))
                     .ToList();
 
                 await pollRepositoryWithTransaction.SaveAsync(options).ConfigureAwait(false);

@@ -21,9 +21,6 @@ public class CreatePollOptionsTable : Migration
 
             Create.UniqueConstraint()
                 .OnTable("poll_options").Columns("poll_id", "text");
-
-            Create.UniqueConstraint()
-                .OnTable("poll_options").Columns("poll_id", "order");
         }
     }
 

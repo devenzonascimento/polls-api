@@ -29,6 +29,7 @@ public class UpdatePollCommandHandler : IRequestHandler<UpdatePollCommand, Guid>
 
         var newOptions = new List<PollOption>();
         var optionsIdsToDelete = new List<Guid>();
+        var orderIndex = 0;
 
         if (request.Options != null && request.Options.Any())
         {
@@ -39,7 +40,7 @@ public class UpdatePollCommandHandler : IRequestHandler<UpdatePollCommand, Guid>
 
                 if (string.IsNullOrWhiteSpace(option.OldText))
                 {
-                    var newOption = new PollOption(poll.Id, option.NewText);
+                    var newOption = new PollOption(poll.Id, option.NewText, orderIndex);
 
                     newOptions.Add(newOption);
                 }
@@ -48,10 +49,12 @@ public class UpdatePollCommandHandler : IRequestHandler<UpdatePollCommand, Guid>
 
                 if (foundOption != null)
                 {
-                    foundOption.Update(option.NewText);
+                    foundOption.Update(option.NewText, orderIndex);
 
                     newOptions.Add(foundOption);
                 }
+
+                orderIndex++;
             }
 
             optionsIdsToDelete.AddRange(
@@ -70,8 +73,9 @@ public class UpdatePollCommandHandler : IRequestHandler<UpdatePollCommand, Guid>
                 var pollRepositoryWithTransaction = pollRepository.WithTransaction(transaction);
 
                 await pollRepositoryWithTransaction.SaveAsync(poll).ConfigureAwait(false);
-                await pollRepositoryWithTransaction.SaveAsync(newOptions).ConfigureAwait(false);
+
                 await pollRepositoryWithTransaction.DeleteOptionsByIdsAsync(optionsIdsToDelete).ConfigureAwait(false);
+                await pollRepositoryWithTransaction.SaveAsync(newOptions).ConfigureAwait(false);
 
                 transaction.Commit();
             }
