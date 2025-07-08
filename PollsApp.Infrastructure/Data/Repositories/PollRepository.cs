@@ -126,6 +126,32 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
         return pollsSummariesWithOptions;
     }
 
+    public async Task<IEnumerable<PollSummary>> GetPollsSummariesByIdsAsync(IEnumerable<Guid> pollsIds)
+    {
+        var sql = @"
+            SELECT
+                p.id AS Id,
+                p.title AS Title,
+                p.description AS Description,
+                p.is_open AS IsOpen,
+                p.created_by AS CreatedBy,
+                p.created_at AS CreatedAt,
+                p.closed_at AS ClosedAt,
+                p.closes_at AS ClosesAt
+            FROM
+                polls p
+            WHERE
+                p.id = ANY(@pollsIds)
+                AND p.is_deleted = false
+        ";
+
+        var pollsSummaries = await Connection.QueryAsync<PollSummary>(sql, new { pollsIds = pollsIds.ToArray() }, Transaction).ConfigureAwait(false);
+
+        var pollsSummariesWithOptions = await GetPollsSummariesWithOptionsAsync(pollsSummaries).ConfigureAwait(false);
+
+        return pollsSummariesWithOptions;
+    }
+
     private async Task<IEnumerable<PollSummary>> GetPollsSummariesWithOptionsAsync(IEnumerable<PollSummary> pollsSummaries)
     {
         var sql = $@"

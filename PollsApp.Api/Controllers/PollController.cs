@@ -40,6 +40,16 @@ public class PollController : ControllerBase
         return Ok(pollSummary);
     }
 
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string search, [FromQuery] bool? isOpen)
+    {
+        var query = new SearchPollsQuery(search, isOpen);
+
+        var pollSummary = await mediator.Send(query).ConfigureAwait(false);
+
+        return Ok(pollSummary);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreatePoll([FromBody] CreatePollRequest request)
     {
