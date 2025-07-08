@@ -136,9 +136,10 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
                 count(v.id) AS VotesCount
             FROM 
                 poll_options po
-            INNER JOIN votes v ON
+            LEFT JOIN votes v ON
                 po.id = v.poll_option_id
-                AND po.poll_id = ANY(@pollsIds)
+            WHERE
+                po.poll_id = ANY(@pollsIds)
             GROUP BY po.id
         ";
 
@@ -159,7 +160,8 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
                 return pollId;
             },
             param: new { pollsIds = pollsSummaries.Select(p => p.Id).ToArray() },
-            splitOn: "Id"
+            splitOn: "Id",
+            transaction: Transaction
         ).ConfigureAwait(false);
 
         foreach (var pollSummary in pollsSummaries)
