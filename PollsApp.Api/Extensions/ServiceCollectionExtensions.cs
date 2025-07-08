@@ -50,6 +50,15 @@ namespace PollsApp.Api.Extensions
             return services;
         }
 
+        public static IServiceCollection AddOpenSearch(this IServiceCollection services, IConfiguration config)
+        {
+            var openSearchConn = config.GetConnectionString("OpenSearch");
+
+            OpenSearchConnectionSingleton.SetConnectionString(openSearchConn);
+
+            return services;
+        }
+
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration config)
         {
             var key = config["Jwt:Key"];

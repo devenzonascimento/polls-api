@@ -12,6 +12,7 @@ builder.Services
     .AddDatabase(builder.Configuration)
     .AddMigrations(builder.Configuration)
     .AddRedis(builder.Configuration)
+    .AddOpenSearch(builder.Configuration)
     .AddJwtAuthentication(builder.Configuration)
     .AddApplicationServices()
     .AddSwaggerWithControllers();
