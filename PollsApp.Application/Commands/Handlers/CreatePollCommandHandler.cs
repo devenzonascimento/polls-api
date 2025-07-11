@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using Hangfire;
+using MediatR;
+using PollsApp.Application.Jobs;
 using PollsApp.Application.Services.Interfaces;
 using PollsApp.Domain.Entities;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
@@ -10,11 +12,13 @@ public class CreatePollCommandHandler : IRequestHandler<CreatePollCommand, Guid>
 {
     private readonly IPollRepository pollRepository;
     private readonly IPollSearchService pollSearchService;
+    private readonly IBackgroundJobClient jobClient;
 
-    public CreatePollCommandHandler(IPollRepository pollRepository, IPollSearchService pollSearchService)
+    public CreatePollCommandHandler(IPollRepository pollRepository, IPollSearchService pollSearchService, IBackgroundJobClient jobClient)
     {
         this.pollRepository = pollRepository;
         this.pollSearchService = pollSearchService;
+        this.jobClient = jobClient;
     }
 
     public async Task<Guid> Handle(CreatePollCommand request, CancellationToken cancellationToken)
@@ -44,6 +48,14 @@ public class CreatePollCommandHandler : IRequestHandler<CreatePollCommand, Guid>
                 transaction.Rollback();
                 throw new InvalidOperationException("Failed to create poll and options", e);
             }
+        }
+
+        if (poll.ClosesAt != null)
+        {
+            jobClient.Schedule<PollsJobs>(
+                job => job.ClosePollAsync(poll.Id),
+                poll.ClosesAt.Value
+            );
         }
 
         await pollSearchService.IndexPollAsync(pollDocument).ConfigureAwait(false);

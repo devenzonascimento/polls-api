@@ -333,6 +333,9 @@ dotnet_diagnostic.SA1649.severity = none
 dotnet_diagnostic.SA1010.severity = none
 dotnet_diagnostic.SA1202.severity = none
 
+# CA1848: Usar os delegados LoggerMessage
+dotnet_diagnostic.CA1848.severity = none
+
 [*.{cs,vb}]
 end_of_line = crlf
 dotnet_style_qualification_for_field = false:silent

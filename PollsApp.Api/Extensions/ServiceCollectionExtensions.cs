@@ -1,11 +1,15 @@
 ﻿using System.Data;
 using System.Text;
 using FluentMigrator.Runner;
+using Hangfire;
+using Hangfire.Redis;
+using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
+using PollsApp.Application.Jobs;
 using PollsApp.Application.Services;
 using PollsApp.Application.Services.Interfaces;
 using PollsApp.Infrastructure.Data.Repositories;
@@ -48,6 +52,24 @@ namespace PollsApp.Api.Extensions
             services.AddSingleton<IConnectionMultiplexer>(sp =>
                 ConnectionMultiplexer.Connect(redisConn)
             );
+            return services;
+        }
+
+        public static IServiceCollection AddHangfire(this IServiceCollection services, IConfiguration config)
+        {
+            var redisConn = config.GetConnectionString("Redis");
+
+            services.AddHangfireServer();
+
+            services.AddHangfire(cfg =>
+            {
+                cfg.UseRedisStorage(redisConn, new RedisStorageOptions
+                {
+                    Prefix = "hangfire:",
+                    InvisibilityTimeout = TimeSpan.FromMinutes(5),
+                });
+            });
+
             return services;
         }
 
@@ -94,7 +116,7 @@ namespace PollsApp.Api.Extensions
                 cfg.RegisterServicesFromAssembly(typeof(AuthService).Assembly);
             });
 
-            // Seus repositórios, serviços de domínio, auth, etc.
+            services.AddScoped<PollsJobs>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPollSearchService, PollSearchService>();
             services.AddScoped<IUserRepository, UserRepository>();

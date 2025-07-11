@@ -5,6 +5,7 @@ using PollsApp.Domain.Entities;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
 namespace PollsApp.Infrastructure.Data.Repositories;
+
 public class VoteRepository : BaseRepository<VoteRepository, IVoteRepository>, IVoteRepository
 {
     public VoteRepository(IDbConnection connection, IDbTransaction transaction = null)

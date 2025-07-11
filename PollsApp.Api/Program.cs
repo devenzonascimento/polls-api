@@ -1,4 +1,5 @@
-﻿using PollsApp.Api.Extensions;
+﻿using Hangfire;
+using PollsApp.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services
     .AddDatabase(builder.Configuration)
     .AddMigrations(builder.Configuration)
     .AddRedis(builder.Configuration)
+    .AddHangfire(builder.Configuration)
     .AddOpenSearch(builder.Configuration)
     .AddJwtAuthentication(builder.Configuration)
     .AddApplicationServices()
@@ -25,6 +27,8 @@ app.RunMigrations();
 // 3) Configurar pipeline
 if (app.Environment.IsDevelopment())
     app.UseDevSwagger();
+
+app.UseHangfireDashboard("/hangfire");
 
 app.UseAuthentication();
 app.UseAuthorization();
