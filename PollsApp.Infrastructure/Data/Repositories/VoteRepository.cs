@@ -13,6 +13,13 @@ public class VoteRepository : BaseRepository<VoteRepository, IVoteRepository>, I
         => await SaveAsync<Vote, VoteDao>(vote, Transaction).ConfigureAwait(false);
     public async Task<IEnumerable<Vote>> SaveAsync(IEnumerable<Vote> votes)
         => await SaveAsync<Vote, VoteDao>(votes, Transaction).ConfigureAwait(false);
+
+    public async Task DeleteByIdAsync(Guid voteId)
+    {
+        var sql = "DELETE FROM votes WHERE id = @voteId;";
+        await Connection.ExecuteAsync(sql, new { voteId }, Transaction).ConfigureAwait(false);
+    }
+
     public async Task<Vote?> GetByIdAsync(Guid id)
     {
         var sql = "SELECT * FROM votes WHERE id = @id;";
@@ -40,11 +47,20 @@ public class VoteRepository : BaseRepository<VoteRepository, IVoteRepository>, I
         return votesDao.Select(v => v.Export());
     }
 
-    public async Task<Vote?> FindUserVote(Guid pollId, Guid userId)
+    public async Task<Vote?> FindUniqueVoteByPollAsync(Guid pollId, Guid userId)
     {
         var sql = "SELECT * FROM votes WHERE poll_id = @pollId AND user_id = @userId;";
 
         var voteDao = await Connection.QuerySingleOrDefaultAsync<VoteDao>(sql, new { pollId, userId }).ConfigureAwait(false);
+
+        return voteDao?.Export();
+    }
+
+    public async Task<Vote?> FindUniqueVoteByOptionAsync(Guid pollOptionId, Guid userId)
+    {
+        var sql = "SELECT * FROM votes WHERE poll_option_id = @pollOptionId AND user_id = @userId;";
+
+        var voteDao = await Connection.QuerySingleOrDefaultAsync<VoteDao>(sql, new { pollOptionId, userId }).ConfigureAwait(false);
 
         return voteDao?.Export();
     }

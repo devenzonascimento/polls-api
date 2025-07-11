@@ -30,8 +30,11 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
         if (!poll.IsOpen)
             throw new ArgumentException("This poll is closed");
 
-        var existingVote = await voteRepository.FindUserVote(option.PollId, request.UserId).ConfigureAwait(false);
+        var existingVote = poll.AllowMultiple
+            ? await voteRepository.FindUniqueVoteByOptionAsync(option.Id, request.UserId).ConfigureAwait(false)
+            : await voteRepository.FindUniqueVoteByPollAsync(option.PollId, request.UserId).ConfigureAwait(false);
 
+        // Novo voto
         if (existingVote is null)
         {
             var vote = new Vote(option.PollId, option.Id, request.UserId);
@@ -41,11 +44,20 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
             return true;
         }
 
+        // Trocando de voto
         if (option.Id != existingVote.PollOptionId)
         {
             existingVote.ChangeOption(option.Id);
 
             await voteRepository.SaveAsync(existingVote).ConfigureAwait(false);
+
+            return true;
+        }
+
+        // Removendo voto
+        if (option.Id == existingVote.PollOptionId)
+        {
+            await voteRepository.DeleteByIdAsync(existingVote.Id).ConfigureAwait(false);
 
             return true;
         }
