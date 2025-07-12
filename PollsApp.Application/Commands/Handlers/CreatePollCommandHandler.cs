@@ -1,64 +1,61 @@
 ﻿using Hangfire;
 using MediatR;
 using PollsApp.Application.Jobs;
-using PollsApp.Application.Services.Interfaces;
 using PollsApp.Domain.Entities;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
-using PollsApp.Infrastructure.Data.Search.Documents;
 
 namespace PollsApp.Application.Commands.Handlers;
 
 public class CreatePollCommandHandler : IRequestHandler<CreatePollCommand, Guid>
 {
     private readonly IPollRepository pollRepository;
-    private readonly IPollSearchService pollSearchService;
     private readonly IBackgroundJobClient jobClient;
+    private readonly IMediator mediator;
 
-    public CreatePollCommandHandler(IPollRepository pollRepository, IPollSearchService pollSearchService, IBackgroundJobClient jobClient)
+    public CreatePollCommandHandler(IPollRepository pollRepository, IBackgroundJobClient jobClient, IMediator mediator)
     {
         this.pollRepository = pollRepository;
-        this.pollSearchService = pollSearchService;
         this.jobClient = jobClient;
+        this.mediator = mediator;
     }
 
     public async Task<Guid> Handle(CreatePollCommand request, CancellationToken cancellationToken)
     {
-        var poll = new Poll(request.Title, request.Description, request.AllowMultiple, request.UserRequesterId, request.ClosesAt);
+        var poll = Poll.Create(request.Title, request.Description, request.AllowMultiple, request.UserRequesterId, request.ClosesAt);
 
-        PollDocument pollDocument;
-        using (var transaction = pollRepository.StartTransaction())
+        using var transaction = pollRepository.StartTransaction();
+
+        try
         {
-            try
-            {
-                var pollRepositoryWithTransaction = pollRepository.WithTransaction(transaction);
-                poll = await pollRepositoryWithTransaction.SaveAsync(poll).ConfigureAwait(false);
+            var pollRepositoryWithTransaction = pollRepository.WithTransaction(transaction);
 
-                var options = request.Options
-                    .Select((optionText, index) => new PollOption(poll.Id, optionText, index))
-                    .ToList();
+            await pollRepositoryWithTransaction.InsertAsync(poll).ConfigureAwait(false);
 
-                await pollRepositoryWithTransaction.SaveAsync(options).ConfigureAwait(false);
+            var options = request.Options
+                .Select((optionText, index) => new PollOption(poll.Id, optionText, index))
+                .ToList();
 
-                pollDocument = new PollDocument(poll, options);
+            await pollRepositoryWithTransaction.SaveAsync(options).ConfigureAwait(false);
 
-                transaction.Commit();
-            }
-            catch (Exception e)
-            {
-                transaction.Rollback();
-                throw new InvalidOperationException("Failed to create poll and options", e);
-            }
+            transaction.Commit();
+        }
+        catch (Exception e)
+        {
+            transaction.Rollback();
+            throw new InvalidOperationException("Failed to create poll and options", e);
         }
 
-        if (poll.ClosesAt != null)
+        if (poll.ClosesAt.HasValue)
         {
-            jobClient.Schedule<PollsJobs>(
-                job => job.ClosePollAsync(poll.Id),
-                poll.ClosesAt.Value
-            );
+            jobClient.Schedule<PollsJobs>(j => j.ClosePollAsync(poll.Id), poll.ClosesAt.Value);
         }
 
-        await pollSearchService.IndexPollAsync(pollDocument).ConfigureAwait(false);
+        foreach (var domainEvent in poll.DomainEvents)
+        {
+            await mediator.Publish(domainEvent, cancellationToken).ConfigureAwait(false);
+        }
+
+        poll.ClearEvents();
 
         return poll.Id;
     }

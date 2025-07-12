@@ -18,6 +18,12 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
     public async Task<IEnumerable<Poll>> SaveAsync(IEnumerable<Poll> polls)
         => await SaveAsync<Poll, PollDao>(polls, Transaction).ConfigureAwait(false);
 
+    public async Task InsertAsync(Poll poll)
+        => await InsertAsync<Poll, PollDao>(poll, Transaction).ConfigureAwait(false);
+
+    public async Task UpdateAsync(Poll poll)
+        => await UpdateAsync<Poll, PollDao>(poll, Transaction).ConfigureAwait(false);
+
     public async Task<PollOption> SaveAsync(PollOption pollOption)
         => await SaveAsync<PollOption, PollOptionDao>(pollOption, Transaction).ConfigureAwait(false);
 

@@ -1,6 +1,9 @@
-﻿namespace PollsApp.Domain.Entities;
+﻿using PollsApp.Domain.Events;
+using PollsApp.Domain.Primitives;
 
-public class Poll
+namespace PollsApp.Domain.Entities;
+
+public class Poll : Entity
 {
     public Guid Id { get; private set; }
     public string Title { get; private set; }
@@ -27,18 +30,27 @@ public class Poll
         ClosesAt = closesAt;
     }
 
-    public Poll(string title, string description, bool allowMultiple, Guid createdBy, DateTime? closesAt)
+    private Poll() { }
+
+    public static Poll Create(string title, string description, bool allowMultiple, Guid createdBy, DateTime? closesAt)
     {
-        Id = Guid.Empty;
-        Title = title;
-        Description = description;
-        AllowMultiple = allowMultiple;
-        IsOpen = true;
-        IsDeleted = false;
-        CreatedBy = createdBy;
-        CreatedAt = DateTime.UtcNow;
-        ClosedAt = null;
-        ClosesAt = closesAt;
+        var poll = new Poll
+        {
+            Id = Guid.NewGuid(),
+            Title = title,
+            Description = description,
+            AllowMultiple = allowMultiple,
+            IsOpen = true,
+            IsDeleted = false,
+            CreatedBy = createdBy,
+            CreatedAt = DateTime.UtcNow,
+            ClosedAt = null,
+            ClosesAt = closesAt,
+        };
+
+        poll.Raise(new PollCreatedDomainEvent(poll.Id));
+
+        return poll;
     }
 
     public void Update(string title, string description, DateTime? closesAt)

@@ -6,6 +6,8 @@ namespace PollsApp.Infrastructure.Data.Repositories.Interfaces;
 public interface IPollRepository : IBaseRepository<IPollRepository>
 {
     Task<Poll> SaveAsync(Poll poll);
+    Task InsertAsync(Poll poll);
+    Task UpdateAsync(Poll poll);
     Task<IEnumerable<Poll>> SaveAsync(IEnumerable<Poll> polls);
     Task<PollOption> SaveAsync(PollOption pollOption);
     Task<IEnumerable<PollOption>> SaveAsync(IEnumerable<PollOption> pollOptions);

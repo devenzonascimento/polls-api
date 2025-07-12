@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using Dapper.Contrib.Extensions;
+using Microsoft.IdentityModel.Tokens;
 
 namespace PollsApp.Infrastructure.Data.Repositories;
 
@@ -86,6 +87,56 @@ public abstract class BaseRepository<TRepoClass, TRepoInterface>
         }
 
         return results;
+    }
+
+    protected async Task InsertAsync<TDomain, TDao>(
+        TDomain domain,
+        IDbTransaction transaction = null
+    )
+        where TDao : class, IBaseDao<TDomain>
+    {
+        var dao = (IBaseDao<TDomain>)Activator.CreateInstance(typeof(TDao), domain);
+
+        await Connection.InsertAsync(dao as TDao, transaction ?? Transaction).ConfigureAwait(false);
+    }
+
+    protected async Task InsertAsync<TDomain, TDao>(
+        IEnumerable<TDomain> domains,
+        IDbTransaction transaction = null
+    )
+        where TDao : class, IBaseDao<TDomain>
+    {
+        var daos = (IEnumerable<IBaseDao<TDomain>>)Activator.CreateInstance(typeof(IEnumerable<TDao>), domains);
+
+        if (daos.IsNullOrEmpty())
+            return;
+
+        await Connection.InsertAsync(daos, transaction ?? Transaction).ConfigureAwait(false);
+    }
+
+    protected async Task UpdateAsync<TDomain, TDao>(
+        TDomain domain,
+        IDbTransaction transaction = null
+    )
+        where TDao : class, IBaseDao<TDomain>
+    {
+        var dao = (IBaseDao<TDomain>)Activator.CreateInstance(typeof(TDao), domain);
+
+        await Connection.UpdateAsync(dao as TDao, transaction ?? Transaction).ConfigureAwait(false);
+    }
+
+    protected async Task UpdateAsync<TDomain, TDao>(
+        IEnumerable<TDomain> domains,
+        IDbTransaction transaction = null
+    )
+        where TDao : class, IBaseDao<TDomain>
+    {
+        var daos = (IEnumerable<IBaseDao<TDomain>>)Activator.CreateInstance(typeof(IEnumerable<TDao>), domains);
+
+        if (daos.IsNullOrEmpty())
+            return;
+
+        await Connection.UpdateAsync(daos, transaction ?? Transaction).ConfigureAwait(false);
     }
 }
 

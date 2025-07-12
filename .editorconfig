@@ -336,6 +336,12 @@ dotnet_diagnostic.SA1202.severity = none
 # CA1848: Usar os delegados LoggerMessage
 dotnet_diagnostic.CA1848.severity = none
 
+# CA1040: Evitar interfaces vazias
+dotnet_diagnostic.CA1040.severity = none
+
+# CA1030: Usar eventos sempre que apropriado
+dotnet_diagnostic.CA1030.severity = none
+
 [*.{cs,vb}]
 end_of_line = crlf
 dotnet_style_qualification_for_field = false:silent
