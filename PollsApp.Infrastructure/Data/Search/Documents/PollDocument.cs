@@ -4,13 +4,15 @@ namespace PollsApp.Infrastructure.Data.Search.Documents;
 
 public class PollDocument
 {
-    public Guid Id { get; private set; }
-    public string Title { get; private set; }
-    public string Description { get; private set; }
-    public IEnumerable<string> Options { get; private set; }
-    public bool IsOpen { get; private set; }
-    public DateTime CreatedAt { get; private set; }
-    public DateTime? ClosedAt { get; private set; }
+    public Guid Id { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public IEnumerable<string> Options { get; set; }
+    public bool IsOpen { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? ClosedAt { get; set; }
+
+    public PollDocument() { }
 
     public PollDocument(Guid id, string title, string description, IEnumerable<string> options, bool isOpen, DateTime createdAt, DateTime? closedAt)
     {

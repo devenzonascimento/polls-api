@@ -48,7 +48,7 @@ public class Poll : Entity
             ClosesAt = closesAt,
         };
 
-        poll.Raise(new PollCreatedDomainEvent(poll.Id));
+        poll.Raise(new PollCreatedDomainEvent(poll));
 
         return poll;
     }

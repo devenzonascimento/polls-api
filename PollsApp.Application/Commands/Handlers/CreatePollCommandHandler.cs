@@ -1,22 +1,19 @@
-﻿using Hangfire;
-using MediatR;
-using PollsApp.Application.Jobs;
+﻿using MediatR;
 using PollsApp.Domain.Entities;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Infrastructure.Events.Interfaces;
 
 namespace PollsApp.Application.Commands.Handlers;
 
 public class CreatePollCommandHandler : IRequestHandler<CreatePollCommand, Guid>
 {
     private readonly IPollRepository pollRepository;
-    private readonly IBackgroundJobClient jobClient;
-    private readonly IMediator mediator;
+    private readonly IDomainEventDispatcher domainEventDispatcher;
 
-    public CreatePollCommandHandler(IPollRepository pollRepository, IBackgroundJobClient jobClient, IMediator mediator)
+    public CreatePollCommandHandler(IPollRepository pollRepository, IDomainEventDispatcher domainEventDispatcher)
     {
         this.pollRepository = pollRepository;
-        this.jobClient = jobClient;
-        this.mediator = mediator;
+        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     public async Task<Guid> Handle(CreatePollCommand request, CancellationToken cancellationToken)
@@ -45,17 +42,7 @@ public class CreatePollCommandHandler : IRequestHandler<CreatePollCommand, Guid>
             throw new InvalidOperationException("Failed to create poll and options", e);
         }
 
-        if (poll.ClosesAt.HasValue)
-        {
-            jobClient.Schedule<PollsJobs>(j => j.ClosePollAsync(poll.Id), poll.ClosesAt.Value);
-        }
-
-        foreach (var domainEvent in poll.DomainEvents)
-        {
-            await mediator.Publish(domainEvent, cancellationToken).ConfigureAwait(false);
-        }
-
-        poll.ClearEvents();
+        await domainEventDispatcher.Dispatch(poll.Events).ConfigureAwait(false);
 
         return poll.Id;
     }

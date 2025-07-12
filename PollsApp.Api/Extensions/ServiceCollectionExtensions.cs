@@ -15,6 +15,8 @@ using PollsApp.Application.Services.Interfaces;
 using PollsApp.Infrastructure.Data.Repositories;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 using PollsApp.Infrastructure.Data.Search;
+using PollsApp.Infrastructure.Events;
+using PollsApp.Infrastructure.Events.Interfaces;
 using StackExchange.Redis;
 
 namespace PollsApp.Api.Extensions
@@ -117,11 +119,15 @@ namespace PollsApp.Api.Extensions
             });
 
             services.AddScoped<PollsJobs>();
+
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPollSearchService, PollSearchService>();
+
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPollRepository, PollRepository>();
             services.AddScoped<IVoteRepository, VoteRepository>();
+
+            services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
             return services;
         }

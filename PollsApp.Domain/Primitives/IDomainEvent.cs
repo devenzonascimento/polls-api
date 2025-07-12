@@ -2,4 +2,4 @@
 
 namespace PollsApp.Domain.Primitives;
 
-public record DomainEvent(Guid Id) : INotification;
+public interface IDomainEvent : INotification { }

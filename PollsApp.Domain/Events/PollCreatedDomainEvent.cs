@@ -1,5 +1,6 @@
-﻿using PollsApp.Domain.Primitives;
+﻿using PollsApp.Domain.Entities;
+using PollsApp.Domain.Primitives;
 
 namespace PollsApp.Domain.Events;
 
-public record PollCreatedDomainEvent(Guid Id) : DomainEvent(Id);
+public record PollCreatedDomainEvent(Poll poll) : IDomainEvent;
