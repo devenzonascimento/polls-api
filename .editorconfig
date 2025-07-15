@@ -342,6 +342,9 @@ dotnet_diagnostic.CA1040.severity = none
 # CA1030: Usar eventos sempre que apropriado
 dotnet_diagnostic.CA1030.severity = none
 
+# CS0618: O tipo ou membro é obsoleto
+dotnet_diagnostic.CS0618.severity = none
+
 [*.{cs,vb}]
 end_of_line = crlf
 dotnet_style_qualification_for_field = false:silent

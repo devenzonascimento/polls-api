@@ -53,23 +53,26 @@ public class Poll : Entity
         return poll;
     }
 
-    public void Update(string title, string description, DateTime? closesAt)
+    public void Update(string? title, string? description, DateTime? closesAt)
     {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title cannot be empty.", nameof(title));
+        if (!string.IsNullOrWhiteSpace(title))
+            Title = title;
 
-        if (closesAt != null && closesAt <= DateTime.UtcNow)
-            throw new ArgumentException("ClosesAt must be in the future.", nameof(closesAt));
+        if (!string.IsNullOrWhiteSpace(description))
+            Description = description;
 
-        Title = title;
-        Description = description;
-        ClosesAt = closesAt;
+        if (closesAt != null && closesAt.HasValue)
+            SetClosesAt(closesAt.Value);
+
+        Raise(new PollUpdatedDomainEvent(this));
     }
 
     public void Close()
     {
         IsOpen = false;
         ClosedAt = DateTime.UtcNow;
+
+        Raise(new PollClosedDomainEvent(this));
     }
 
     public void MarkAsDeleted()
@@ -77,5 +80,17 @@ public class Poll : Entity
         IsOpen = false;
         IsDeleted = true;
         ClosedAt = DateTime.UtcNow;
+
+        Raise(new PollDeletedDomainEvent(Id));
+    }
+
+    private void SetClosesAt(DateTime closesAt)
+    {
+        if (closesAt <= DateTime.UtcNow)
+            throw new ArgumentException("ClosesAt must be in the future.", nameof(closesAt));
+
+        var oldClosesAt = ClosesAt;
+
+        ClosesAt = closesAt;
     }
 }

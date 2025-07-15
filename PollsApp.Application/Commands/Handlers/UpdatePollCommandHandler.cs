@@ -1,16 +1,19 @@
 ﻿using MediatR;
 using PollsApp.Domain.Entities;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Infrastructure.Events.Interfaces;
 
 namespace PollsApp.Application.Commands.Handlers;
 
 public class UpdatePollCommandHandler : IRequestHandler<UpdatePollCommand, Guid>
 {
     private readonly IPollRepository pollRepository;
+    private readonly IDomainEventDispatcher domainEventDispatcher;
 
-    public UpdatePollCommandHandler(IPollRepository pollRepository)
+    public UpdatePollCommandHandler(IPollRepository pollRepository, IDomainEventDispatcher domainEventDispatcher)
     {
         this.pollRepository = pollRepository;
+        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     public async Task<Guid> Handle(UpdatePollCommand request, CancellationToken cancellationToken)
@@ -66,25 +69,26 @@ public class UpdatePollCommandHandler : IRequestHandler<UpdatePollCommand, Guid>
 
         poll.Update(request.Title, request.Description, request.ClosesAt);
 
-        using (var transaction = pollRepository.StartTransaction())
+        using var transaction = pollRepository.StartTransaction();
+
+        try
         {
-            try
-            {
-                var pollRepositoryWithTransaction = pollRepository.WithTransaction(transaction);
+            var pollRepositoryWithTransaction = pollRepository.WithTransaction(transaction);
 
-                await pollRepositoryWithTransaction.SaveAsync(poll).ConfigureAwait(false);
+            await pollRepositoryWithTransaction.SaveAsync(poll).ConfigureAwait(false);
 
-                await pollRepositoryWithTransaction.DeleteOptionsByIdsAsync(optionsIdsToDelete).ConfigureAwait(false);
-                await pollRepositoryWithTransaction.SaveAsync(newOptions).ConfigureAwait(false);
+            await pollRepositoryWithTransaction.DeleteOptionsByIdsAsync(optionsIdsToDelete).ConfigureAwait(false);
+            await pollRepositoryWithTransaction.SaveAsync(newOptions).ConfigureAwait(false);
 
-                transaction.Commit();
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
+            transaction.Commit();
         }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+
+        await domainEventDispatcher.Dispatch(poll.Events).ConfigureAwait(false);
 
         return poll.Id;
     }

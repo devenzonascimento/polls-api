@@ -3,4 +3,4 @@ using PollsApp.Domain.Primitives;
 
 namespace PollsApp.Domain.Events;
 
-public record PollCreatedDomainEvent(Poll Poll) : IDomainEvent;
+public record PollUpdatedDomainEvent(Poll Poll) : IDomainEvent;

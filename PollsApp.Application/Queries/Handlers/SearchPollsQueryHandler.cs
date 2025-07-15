@@ -24,7 +24,7 @@ public class SearchPollsQueryHandler : IRequestHandler<SearchPollsQuery, IEnumer
 
     public async Task<IEnumerable<PollSummary>> Handle(SearchPollsQuery request, CancellationToken cancellationToken)
     {
-        var pollsIdsFound = await pollSearchService.SearchPollAsync(request.Search, request.IsOpen).ConfigureAwait(false);
+        var pollsIdsFound = await pollSearchService.SearchAsync(request.Search, request.IsOpen).ConfigureAwait(false);
 
         return await pollRepository.GetPollsSummariesByIdsAsync(pollsIdsFound).ConfigureAwait(false);
     }

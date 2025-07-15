@@ -1,15 +1,18 @@
 ﻿using MediatR;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Infrastructure.Events.Interfaces;
 
 namespace PollsApp.Application.Commands.Handlers;
 
 public class DeletePollCommandHandler : IRequestHandler<DeletePollCommand, Guid>
 {
     private readonly IPollRepository pollRepository;
+    private readonly IDomainEventDispatcher domainEventDispatcher;
 
-    public DeletePollCommandHandler(IPollRepository pollRepository)
+    public DeletePollCommandHandler(IPollRepository pollRepository, IDomainEventDispatcher domainEventDispatcher)
     {
         this.pollRepository = pollRepository;
+        this.domainEventDispatcher = domainEventDispatcher;
     }
 
     public async Task<Guid> Handle(DeletePollCommand request, CancellationToken cancellationToken)
@@ -25,6 +28,8 @@ public class DeletePollCommandHandler : IRequestHandler<DeletePollCommand, Guid>
         poll.MarkAsDeleted();
 
         await pollRepository.SaveAsync(poll).ConfigureAwait(false);
+
+        await domainEventDispatcher.Dispatch(poll.Events).ConfigureAwait(false);
 
         return poll.Id;
     }

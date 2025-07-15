@@ -5,7 +5,8 @@ namespace PollsApp.Application.Services.Interfaces;
 public interface IPollSearchService
 {
     Task CreateIndexAsync();
-    Task IndexPollAsync(PollDocument doc);
-    Task UpdatePollStatusAsync(Guid id, string newStatus);
-    Task<IEnumerable<Guid>> SearchPollAsync(string searchTerm, bool? isOpen);
+    Task IndexAsync(PollDocument doc);
+    Task UpdateAsync(Guid pollId, PollDocument doc);
+    Task DeleteAsync(Guid pollId);
+    Task<IEnumerable<Guid>> SearchAsync(string searchTerm, bool? isOpen);
 }

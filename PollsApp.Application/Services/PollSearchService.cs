@@ -1,4 +1,5 @@
 ﻿using OpenSearch.Client;
+using OpenSearch.Net;
 using PollsApp.Application.Services.Interfaces;
 using PollsApp.Infrastructure.Data.Search;
 using PollsApp.Infrastructure.Data.Search.Documents;
@@ -76,7 +77,7 @@ public class PollSearchService : IPollSearchService
             throw new Exception($"Failed to create index: {createResponse.DebugInformation}");
     }
 
-    public async Task IndexPollAsync(PollDocument doc)
+    public async Task IndexAsync(PollDocument doc)
     {
         await CreateIndexAsync().ConfigureAwait(false);
 
@@ -86,18 +87,31 @@ public class PollSearchService : IPollSearchService
             throw new Exception($"Index error: {response.DebugInformation}");
     }
 
-    public async Task UpdatePollStatusAsync(Guid id, string newStatus)
+    public async Task UpdateAsync(Guid pollId, PollDocument doc)
     {
-        var response = await client.UpdateAsync<PollDocument, object>(id, u => u
+        var response = await client.UpdateAsync<PollDocument, object>(pollId, u => u
             .Index(IndexName)
-            .Doc(new { Status = newStatus })
+            .Doc(doc)
+            .RetryOnConflict(3)
+            .Refresh(Refresh.True)
         ).ConfigureAwait(false);
 
         if (!response.IsValid)
             throw new Exception($"Update error: {response.DebugInformation}");
     }
 
-    public async Task<IEnumerable<Guid>> SearchPollAsync(string searchTerm, bool? isOpen)
+    public async Task DeleteAsync(Guid pollId)
+    {
+        var response = await client.DeleteAsync<PollDocument>(pollId, d => d
+            .Index(IndexName)
+            .Refresh(Refresh.True)
+        ).ConfigureAwait(false);
+
+        if (!response.IsValid)
+            throw new Exception($"Delete error: {response.DebugInformation}");
+    }
+
+    public async Task<IEnumerable<Guid>> SearchAsync(string searchTerm, bool? isOpen)
     {
         var response = await client.SearchAsync<PollDocument>(sd => sd
             .Index(IndexName)
