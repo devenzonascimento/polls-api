@@ -1,37 +1,45 @@
 ﻿using Hangfire;
 using Microsoft.Extensions.Logging;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Infrastructure.Events.Interfaces;
 
 namespace PollsApp.Application.Jobs;
 
 public class PollsJobs
 {
     private readonly IPollRepository pollRepository;
+    private readonly IDomainEventDispatcher domainEventDispatcher;
     private readonly ILogger<PollsJobs> logger;
 
-    public PollsJobs(IPollRepository pollRepository, ILogger<PollsJobs> logger)
+    public PollsJobs(IPollRepository pollRepository, IDomainEventDispatcher domainEventDispatcher, ILogger<PollsJobs> logger)
     {
         this.pollRepository = pollRepository;
+        this.domainEventDispatcher = domainEventDispatcher;
         this.logger = logger;
     }
 
     [AutomaticRetry(Attempts = 2)]
-    public async Task ClosePollAsync(Guid pollId)
+    public async Task CloseExpiredPollsAsync()
     {
-        logger.LogInformation("Closing poll {PollId} scheduled at {Time}", pollId, DateTime.UtcNow);
+        var polls = await pollRepository.GetExpiredPollsAsync().ConfigureAwait(false);
 
-        var poll = await pollRepository.GetByIdAsync(pollId).ConfigureAwait(false);
-
-        if (poll == null || poll.IsDeleted || !poll.IsOpen)
+        foreach (var poll in polls)
         {
-            logger.LogInformation("Poll {PollId} already closed or not found", pollId);
-            return;
+            logger.LogInformation("Closing poll {PollId} scheduled at {Time}", poll.Id, DateTime.UtcNow);
+
+            if (poll.IsDeleted || !poll.IsOpen)
+            {
+                logger.LogInformation("Poll {PollId} already closed or not found", poll?.Id);
+                return;
+            }
+
+            poll.Close();
+
+            await pollRepository.UpdateAsync(poll).ConfigureAwait(false);
+
+            logger.LogInformation("Poll {PollId} closed successfully", poll.Id);
+
+            await domainEventDispatcher.Dispatch(poll.Events).ConfigureAwait(false);
         }
-
-        poll.Close();
-
-        await pollRepository.SaveAsync(poll).ConfigureAwait(false);
-
-        logger.LogInformation("Poll {PollId} closed successfully", pollId);
     }
 }

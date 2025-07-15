@@ -19,6 +19,7 @@ public interface IPollRepository : IBaseRepository<IPollRepository>
     Task<PollSummary> GetPollSummaryAsync(Guid pollId);
     Task<IEnumerable<PollSummary>> GetPollsSummariesAsync();
     Task<IEnumerable<PollSummary>> GetPollsSummariesByIdsAsync(IEnumerable<Guid> pollsIds);
+    Task<IEnumerable<Poll>> GetExpiredPollsAsync();
     Task DeleteOptionByIdAsync(Guid id);
     Task DeleteOptionsByIdsAsync(IEnumerable<Guid> ids);
 }

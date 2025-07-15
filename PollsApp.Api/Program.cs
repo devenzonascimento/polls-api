@@ -29,6 +29,7 @@ if (app.Environment.IsDevelopment())
     app.UseDevSwagger();
 
 app.UseHangfireDashboard("/hangfire");
+app.LoadRecurrentJobs();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -207,6 +207,28 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
         return pollsSummaries;
     }
 
+    public async Task<IEnumerable<Poll>> GetExpiredPollsAsync()
+    {
+        var now = DateTime.UtcNow;
+
+        var sql = $@"
+            SELECT
+                *
+            FROM
+                polls p
+            WHERE
+                p.is_deleted = FALSE
+                AND p.is_open = TRUE
+                AND p.closed_at IS NULL
+                AND p.closes_at < @now
+            LIMIT 1000;
+        ";
+
+        var polls = await Connection.QueryAsync<PollDao>(sql, new { now }, Transaction).ConfigureAwait(false);
+
+        return polls.Select(p => p.Export());
+    }
+
     public async Task DeleteOptionByIdAsync(Guid id)
     {
         var sql = "DELETE FROM poll_options WHERE id = @id;";

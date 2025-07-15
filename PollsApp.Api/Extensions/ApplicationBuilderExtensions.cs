@@ -1,6 +1,8 @@
 ﻿using FluentMigrator.Runner;
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using PollsApp.Application.Jobs;
 
 namespace PollsApp.Api.Extensions
 {
@@ -11,6 +13,15 @@ namespace PollsApp.Api.Extensions
             using var scope = app.Services.CreateScope();
             var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
             runner.MigrateUp();
+        }
+
+        public static void LoadRecurrentJobs(this WebApplication app)
+        {
+            RecurringJob.AddOrUpdate<PollsJobs>(
+                "expired-polls",
+                job => job.CloseExpiredPollsAsync(),
+                Cron.Minutely
+            );
         }
 
         public static WebApplication UseDevSwagger(this WebApplication app)
