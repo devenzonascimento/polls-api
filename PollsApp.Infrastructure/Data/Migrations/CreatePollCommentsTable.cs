@@ -13,6 +13,7 @@ public class CreatePollCommentsTable : Migration
                 .WithColumn("id").AsGuid().PrimaryKey()
                 .WithColumn("poll_id").AsGuid().NotNullable()
                 .WithColumn("text").AsString(500).NotNullable()
+                .WithColumn("is_edited").AsBoolean().NotNullable().WithDefaultValue(false)
                 .WithColumn("reply_to").AsGuid().Nullable()
                 .WithColumn("created_by").AsGuid().NotNullable()
                 .WithColumn("is_deleted").AsBoolean().NotNullable().WithDefaultValue(false)
