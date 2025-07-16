@@ -30,6 +30,9 @@ public class PollComment : Entity
 
     public static PollComment Create(string text, Guid pollId, Guid userId)
     {
+        if (string.IsNullOrWhiteSpace(text))
+            throw new ArgumentException("Comment cannot be null or empty.");
+
         var comment = new PollComment()
         {
             Id = Guid.NewGuid(),
@@ -47,21 +50,25 @@ public class PollComment : Entity
         return comment;
     }
 
-    public static PollComment Reply(string text, PollComment commentToReply, Guid userId)
+    public PollComment Reply(string text, Guid userId)
     {
+        if (string.IsNullOrWhiteSpace(text))
+            throw new ArgumentException("Comment cannot be null or empty.");
+
         var replyComment = new PollComment()
         {
+            ReplyTo = this.Id,
+            PollId = this.PollId,
+
             Id = Guid.NewGuid(),
-            PollId = commentToReply.PollId,
             Text = text,
             IsEdited = false,
-            ReplyTo = commentToReply.Id,
             CreatedBy = userId,
             IsDeleted = false,
             CreatedAt = DateTime.UtcNow,
         };
 
-        replyComment.Raise(new CommentRepliedDomainEvent(commentToReply, replyComment));
+        replyComment.Raise(new CommentRepliedDomainEvent(this, replyComment));
 
         return replyComment;
     }

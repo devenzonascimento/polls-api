@@ -30,4 +30,16 @@ public class CommentsController : ControllerBase
 
         return Ok(new { id = commentId });
     }
+
+    [HttpPost("reply")]
+    public async Task<IActionResult> ReplyComment([FromBody] ReplyCommentRequest request)
+    {
+        var userId = User.GetUserId();
+
+        var command = new ReplyCommentCommand(userId, request.CommentIdToReply, request.ReplyComment);
+
+        var commentId = await mediator.Send(command).ConfigureAwait(false);
+
+        return Ok(new { id = commentId });
+    }
 }
