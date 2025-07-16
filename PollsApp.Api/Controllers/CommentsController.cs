@@ -44,11 +44,23 @@ public class CommentsController : ControllerBase
     }
 
     [HttpPut("edit")]
-    public async Task<IActionResult> ReplyComment([FromBody] EditCommentRequest request)
+    public async Task<IActionResult> EditComment([FromBody] EditCommentRequest request)
     {
         var userId = User.GetUserId();
 
         var command = new EditCommentCommand(userId, request.CommentId, request.NewComment);
+
+        await mediator.Send(command).ConfigureAwait(false);
+
+        return Ok();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteComment([FromRoute] Guid id)
+    {
+        var userId = User.GetUserId();
+
+        var command = new DeleteCommentCommand(userId, id);
 
         await mediator.Send(command).ConfigureAwait(false);
 

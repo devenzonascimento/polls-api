@@ -87,10 +87,26 @@ public class PollComment : Entity
         Raise(new CommentEditedDomainEvent(this));
     }
 
-    public void MarkAsDeleted()
+    public void MarkAsDeleted(Guid userId)
     {
-        IsDeleted = true;
+        if (CreatedBy != userId)
+            throw new UnauthorizedAccessException("You are not authorized to update this poll.");
 
-        Raise(new CommentDeletedDomainEvent(this));
+        if (!IsDeleted)
+        {
+            IsDeleted = true;
+
+            Raise(new CommentDeletedDomainEvent(this));
+        }
+    }
+
+    public void MarkAsDeletedByParentCommentDeletion()
+    {
+        if (!IsDeleted)
+        {
+            IsDeleted = true;
+
+            Raise(new CommentDeletedDomainEvent(this));
+        }
     }
 }

@@ -106,7 +106,10 @@ public abstract class BaseRepository<TRepoClass, TRepoInterface>
     )
         where TDao : class, IBaseDao<TDomain>
     {
-        var daos = (IEnumerable<IBaseDao<TDomain>>)Activator.CreateInstance(typeof(IEnumerable<TDao>), domains);
+        var daos = new List<IBaseDao<TDomain>>();
+
+        foreach (var domain in domains)
+            daos.Add((IBaseDao<TDomain>)Activator.CreateInstance(typeof(TDao), domain));
 
         if (daos.IsNullOrEmpty())
             return;
@@ -131,7 +134,10 @@ public abstract class BaseRepository<TRepoClass, TRepoInterface>
     )
         where TDao : class, IBaseDao<TDomain>
     {
-        var daos = (IEnumerable<IBaseDao<TDomain>>)Activator.CreateInstance(typeof(IEnumerable<TDao>), domains);
+        var daos = new List<IBaseDao<TDomain>>();
+
+        foreach (var domain in domains)
+            daos.Add((IBaseDao<TDomain>)Activator.CreateInstance(typeof(TDao), domain));
 
         if (daos.IsNullOrEmpty())
             return;

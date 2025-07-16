@@ -26,6 +26,15 @@ public class PollCommentRepository : BaseRepository<PollCommentRepository, IPoll
         return pollCommentDao?.Export();
     }
 
+    public async Task<IEnumerable<PollComment>> GetAllCommentReplies(Guid commentId)
+    {
+        var sql = "SELECT * FROM poll_comments p WHERE p.reply_to = @commentId AND p.is_deleted = FALSE";
+
+        var pollCommentDao = await Connection.QueryAsync<PollCommentDao>(sql, new { commentId }, Transaction).ConfigureAwait(false);
+
+        return pollCommentDao.Select(c => c.Export());
+    }
+
     public async Task<IEnumerable<PollComment>> GetCommentsByPollAsync(Guid pollId)
     {
         var sql = "SELECT * FROM poll_comments p WHERE p.poll_id = @pollId AND p.is_deleted = FALSE";
@@ -43,7 +52,7 @@ public class PollCommentDao : IBaseDao<PollComment>
     #pragma warning disable SA1300 // Element should begin with upper-case letter
     #pragma warning disable CA1707 // Identificadores não devem conter sublinhados
     [ExplicitKey]
-    public Guid id  { get; set; }
+    public Guid id { get; set; }
     public Guid poll_id { get; set; }
     public string text { get; set; }
     public bool is_edited { get; set; }
