@@ -125,6 +125,7 @@ namespace PollsApp.Api.Extensions
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPollRepository, PollRepository>();
+            services.AddScoped<IPollCommentRepository, PollCommentRepository>();
             services.AddScoped<IVoteRepository, VoteRepository>();
 
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
