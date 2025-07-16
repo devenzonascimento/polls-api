@@ -125,6 +125,8 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
                 polls p
             WHERE
                 p.is_deleted = false
+            ORDER BY
+                p.created_at DESC
         ";
 
         var pollsSummaries = await Connection.QueryAsync<PollSummary>(sql).ConfigureAwait(false);
