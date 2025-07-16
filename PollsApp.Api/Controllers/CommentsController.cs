@@ -36,10 +36,22 @@ public class CommentsController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var command = new ReplyCommentCommand(userId, request.CommentIdToReply, request.ReplyComment);
+        var command = new ReplyCommentCommand(userId, request.CommentIdToReply, request.Comment);
 
         var commentId = await mediator.Send(command).ConfigureAwait(false);
 
         return Ok(new { id = commentId });
+    }
+
+    [HttpPut("edit")]
+    public async Task<IActionResult> ReplyComment([FromBody] EditCommentRequest request)
+    {
+        var userId = User.GetUserId();
+
+        var command = new EditCommentCommand(userId, request.CommentId, request.NewComment);
+
+        await mediator.Send(command).ConfigureAwait(false);
+
+        return Ok();
     }
 }
