@@ -24,13 +24,10 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
 
     public async Task<Guid> Handle(CreateCommentCommand request, CancellationToken cancellationToken)
     {
-        var poll = await pollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false);
+        var poll = await pollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false)
+            ?? throw new ArgumentException($"Poll with ID {request.PollId} not found.");
 
-        if (poll == null || poll.IsDeleted)
-            throw new ArgumentException($"Poll with ID {request.PollId} not found.");
-
-        if (!poll.IsOpen)
-            throw new ArgumentException("This poll is closed.");
+        poll.EnsureExistsAndOpen();
 
         var comment = PollComment.Create(
             request.Text,

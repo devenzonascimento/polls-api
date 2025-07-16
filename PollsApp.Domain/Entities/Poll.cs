@@ -84,6 +84,15 @@ public class Poll : Entity
         Raise(new PollDeletedDomainEvent(Id));
     }
 
+    public void EnsureExistsAndOpen()
+    {
+        if (IsDeleted)
+            throw new ArgumentException($"Poll with ID {Id} not found.");
+
+        if (!IsOpen)
+            throw new ArgumentException("This poll is closed.");
+    }
+
     private void SetClosesAt(DateTime closesAt)
     {
         if (closesAt <= DateTime.UtcNow)

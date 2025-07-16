@@ -31,7 +31,7 @@ public class PollComment : Entity
     public static PollComment Create(string text, Guid pollId, Guid userId)
     {
         if (string.IsNullOrWhiteSpace(text))
-            throw new ArgumentException("Comment cannot be null or empty.");
+            throw new ArgumentException("Comment text cannot be null or empty.");
 
         var comment = new PollComment()
         {
@@ -53,7 +53,7 @@ public class PollComment : Entity
     public PollComment Reply(string text, Guid userId)
     {
         if (string.IsNullOrWhiteSpace(text))
-            throw new ArgumentException("Comment cannot be null or empty.");
+            throw new ArgumentException("Comment text cannot be null or empty.");
 
         var replyComment = new PollComment()
         {
@@ -73,8 +73,14 @@ public class PollComment : Entity
         return replyComment;
     }
 
-    public void Edit(string newText)
+    public void Edit(string newText, Guid userId)
     {
+        if (CreatedBy != userId)
+            throw new UnauthorizedAccessException("You are not authorized to update this poll.");
+
+        if (string.IsNullOrWhiteSpace(newText))
+            throw new ArgumentException("Comment text cannot be null or empty.");
+
         Text = newText;
         IsEdited = true;
 

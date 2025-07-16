@@ -31,11 +31,7 @@ public class ReplyCommentCommandHandler : IRequestHandler<ReplyCommentCommand, G
 
         var poll = await pollRepository.GetByIdAsync(commentToReply.PollId).ConfigureAwait(false);
 
-        if (poll == null || poll.IsDeleted)
-            throw new ArgumentException($"Poll with ID {commentToReply.PollId} not found.");
-
-        if (!poll.IsOpen)
-            throw new ArgumentException("This poll is closed.");
+        poll?.EnsureExistsAndOpen();
 
         var replyComment = commentToReply.Reply(request.Comment, request.UserId);
 
