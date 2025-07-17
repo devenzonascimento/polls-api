@@ -57,7 +57,7 @@ public class PollComment : Entity
 
         var replyComment = new PollComment()
         {
-            ReplyTo = this.Id,
+            ReplyTo = this.ReplyTo != null ? this.ReplyTo : this.Id,
             PollId = this.PollId,
 
             Id = Guid.NewGuid(),
