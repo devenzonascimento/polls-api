@@ -104,22 +104,22 @@ Por padrão ouvirá em `http://localhost:5232`.
 
 ### 📑 Endpoints Principais
 
-| Método | Rota                      | Descrição                           |
-| ------ | ------------------------- | ----------------------------------- |
-| POST   | `/api/auth/register`      | Registra usuário                    |
-| POST   | `/api/auth/login`         | Login (gera JWT)                    |
-| GET    | `/api/poll`               | Lista todas enquetes (sem opções)   |
-| POST   | `/api/poll`               | Cria nova enquete                   |
-| PUT    | `/api/poll`               | Atualiza dados da enquete           |
-| GET    | `/api/poll/{id}`          | Consulta enquete + opções           |
-| DELETE | `/api/poll/{id}`          | Deleta enquete                      |
-| GET    | `/api/poll/search`        | Buscar por texto/status             |
-| GET    | `/api/poll/top-ranking`   | Top N enquetes mais votadas (Redis) |
-| POST   | `/api/vote?optionId={id}` | Votar em opção                      |
-| POST   | `/api/comments`           | Criar comentário                    |
-| POST   | `/api/comments/reply`     | Responder comentário                |
-| PUT    | `/api/comments/edit`      | Editar comentário                   |
-| DELETE | `/api/comments/{id}`      | Deletar comentário                  |
+| Método | Rota                       | Descrição                           |
+| ------ | -------------------------- | ----------------------------------- |
+| POST   | `/api/auth/register`       | Registra usuário                    |
+| POST   | `/api/auth/login`          | Login (gera JWT)                    |
+| GET    | `/api/polls`               | Lista todas enquetes (sem opções)   |
+| POST   | `/api/polls`               | Cria nova enquete                   |
+| PUT    | `/api/polls`               | Atualiza dados da enquete           |
+| GET    | `/api/polls/{id}`          | Consulta enquete + opções           |
+| DELETE | `/api/polls/{id}`          | Deleta enquete                      |
+| GET    | `/api/polls/search`        | Buscar por texto/status             |
+| GET    | `/api/polls/top-ranking`   | Top N enquetes mais votadas (Redis) |
+| POST   | `/api/votes?optionId={id}` | Votar em opção                      |
+| POST   | `/api/comments`            | Criar comentário                    |
+| POST   | `/api/comments/reply`      | Responder comentário                |
+| PUT    | `/api/comments/edit`       | Editar comentário                   |
+| DELETE | `/api/comments/{id}`       | Deletar comentário                  |
 
 ---
 

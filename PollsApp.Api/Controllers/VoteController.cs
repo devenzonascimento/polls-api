@@ -8,7 +8,7 @@ namespace PollsApp.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/vote")]
+[Route("api/votes")]
 public class VoteController : ControllerBase
 {
     private readonly IMediator mediator;
