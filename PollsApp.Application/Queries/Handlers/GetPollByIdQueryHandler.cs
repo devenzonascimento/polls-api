@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using PollsApp.Domain.Aggregates;
+using PollsApp.Domain.Entities;
+using PollsApp.Domain.Exceptions;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
 namespace PollsApp.Application.Queries.Handlers;
@@ -18,7 +20,7 @@ public class GetPollByIdQueryHandler : IRequestHandler<GetPollByIdQuery, PollSum
         var pollSummary = await pollRepository.GetPollSummaryAsync(request.PollId).ConfigureAwait(false);
 
         if (pollSummary == null)
-            throw new ArgumentException($"Poll with ID {request.PollId} not found.");
+            throw new NotFoundException("Poll", request.PollId);
 
         return pollSummary;
     }

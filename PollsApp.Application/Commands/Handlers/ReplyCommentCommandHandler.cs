@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using PollsApp.Domain.Entities;
+using PollsApp.Domain.Exceptions;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 using PollsApp.Infrastructure.Events.Interfaces;
 
@@ -31,7 +32,11 @@ public class ReplyCommentCommandHandler : IRequestHandler<ReplyCommentCommand, G
 
         var poll = await pollRepository.GetByIdAsync(commentToReply.PollId).ConfigureAwait(false);
 
-        poll?.EnsureExistsAndOpen();
+        if (poll == null || poll.IsDeleted)
+            throw new NotFoundException("Poll", commentToReply.PollId);
+
+        if (!poll.IsOpen)
+            throw new InvalidStateException("This poll is closed.");
 
         var replyComment = commentToReply.Reply(request.Comment, request.UserId);
 

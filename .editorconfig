@@ -345,6 +345,12 @@ dotnet_diagnostic.CA1030.severity = none
 # CS0618: O tipo ou membro é obsoleto
 dotnet_diagnostic.CS0618.severity = none
 
+# CA1032: Implementar construtores de exceção padrão
+dotnet_diagnostic.CA1032.severity = none
+
+# CA1031: Não capturar exceptions de tipos genéricos
+dotnet_diagnostic.CA1031.severity = none
+
 [*.{cs,vb}]
 end_of_line = crlf
 dotnet_style_qualification_for_field = false:silent

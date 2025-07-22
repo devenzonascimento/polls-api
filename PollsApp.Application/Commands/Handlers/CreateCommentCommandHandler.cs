@@ -1,5 +1,7 @@
 ﻿using MediatR;
+using OpenSearch.Client;
 using PollsApp.Domain.Entities;
+using PollsApp.Domain.Exceptions;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 using PollsApp.Infrastructure.Events.Interfaces;
 
@@ -24,10 +26,13 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
 
     public async Task<Guid> Handle(CreateCommentCommand request, CancellationToken cancellationToken)
     {
-        var poll = await pollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false)
-            ?? throw new ArgumentException($"Poll with ID {request.PollId} not found.");
+        var poll = await pollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false);
 
-        poll.EnsureExistsAndOpen();
+        if (poll == null || poll.IsDeleted)
+            throw new NotFoundException("Poll", request.PollId);
+
+        if (!poll.IsOpen)
+            throw new InvalidStateException("This poll is closed.");
 
         var comment = PollComment.Create(
             request.Text,

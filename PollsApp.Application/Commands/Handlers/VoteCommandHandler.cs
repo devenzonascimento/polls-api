@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using PollsApp.Domain.Entities;
+using PollsApp.Domain.Exceptions;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
 namespace PollsApp.Application.Commands.Handlers;
@@ -24,11 +25,11 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
 
         var poll = await pollRepository.GetByIdAsync(option.PollId).ConfigureAwait(false);
 
-        if (poll == null)
-            throw new ArgumentException("Poll not found.");
+        if (poll == null || poll.IsDeleted)
+            throw new NotFoundException("Poll", option.PollId);
 
         if (!poll.IsOpen)
-            throw new ArgumentException("This poll is closed");
+            throw new InvalidStateException("This poll is closed.");
 
         var existingVote = poll.AllowMultiple
             ? await voteRepository.FindUniqueVoteByOptionAsync(option.Id, request.UserId).ConfigureAwait(false)

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using PollsApp.Domain.Exceptions;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 using PollsApp.Infrastructure.Events.Interfaces;
 
@@ -30,7 +31,11 @@ public class EditCommentCommandHandler : IRequestHandler<EditCommentCommand, boo
 
         var poll = await pollRepository.GetByIdAsync(comment.PollId).ConfigureAwait(false);
 
-        poll?.EnsureExistsAndOpen();
+        if (poll == null || poll.IsDeleted)
+            throw new NotFoundException("Poll", comment.PollId);
+
+        if (!poll.IsOpen)
+            throw new InvalidStateException("This poll is closed.");
 
         comment.Edit(request.NewComment, request.UserId);
 

@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using PollsApp.Domain.Entities;
+using PollsApp.Domain.Exceptions;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 using PollsApp.Infrastructure.Events.Interfaces;
 
@@ -22,10 +23,10 @@ public class UpdatePollCommandHandler : IRequestHandler<UpdatePollCommand, Guid>
         var pollOptions = await pollRepository.GetOptionsByPollIdAsync(request.PollId).ConfigureAwait(false);
 
         if (poll == null || poll.IsDeleted)
-            throw new ArgumentException($"Poll with ID {request.PollId} not found.");
+            throw new NotFoundException("Poll", request.PollId);
 
         if (!poll.IsOpen)
-            throw new ArgumentException("This poll is closed.");
+            throw new InvalidStateException("This poll is closed.");
 
         if (poll.CreatedBy != request.UserRequesterId)
             throw new UnauthorizedAccessException("You are not authorized to update this poll.");

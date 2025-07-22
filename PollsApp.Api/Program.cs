@@ -1,5 +1,6 @@
 ﻿using Hangfire;
 using PollsApp.Api.Extensions;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,14 @@ builder.Services
     .AddApplicationServices()
     .AddSwaggerWithControllers();
 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateLogger();
+builder.Logging.AddSerilog();
+builder.Host.UseSerilog();
+
 var app = builder.Build();
 
 // 2) Aplicar migrations
@@ -32,6 +41,7 @@ if (app.Environment.IsDevelopment())
 app.UseHangfireDashboard("/hangfire");
 app.LoadRecurrentJobs();
 
+app.AddMiddlewares();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

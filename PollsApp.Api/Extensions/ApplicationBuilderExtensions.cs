@@ -2,6 +2,7 @@
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using PollsApp.Api.Middlewares;
 using PollsApp.Application.Jobs;
 
 namespace PollsApp.Api.Extensions
@@ -13,6 +14,11 @@ namespace PollsApp.Api.Extensions
             using var scope = app.Services.CreateScope();
             var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
             runner.MigrateUp();
+        }
+
+        public static void AddMiddlewares(this WebApplication app)
+        {
+            app.UseMiddleware<ErrorHandlingMiddleware>();
         }
 
         public static void LoadRecurrentJobs(this WebApplication app)
