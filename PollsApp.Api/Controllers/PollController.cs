@@ -45,9 +45,19 @@ public class PollController : ControllerBase
     {
         var query = new SearchPollsQuery(search, isOpen);
 
-        var pollSummary = await mediator.Send(query).ConfigureAwait(false);
+        var pollsSummaries = await mediator.Send(query).ConfigureAwait(false);
 
-        return Ok(pollSummary);
+        return Ok(pollsSummaries);
+    }
+
+    [HttpGet("top-ranking")]
+    public async Task<IActionResult> GetTop()
+    {
+        var query = new GetRankedPollsQuery();
+
+        var pollsSummaries = await mediator.Send(query).ConfigureAwait(false);
+
+        return Ok(pollsSummaries);
     }
 
     [HttpPost]

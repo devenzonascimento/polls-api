@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using PollsApp.Application.Services.Interfaces;
 using PollsApp.Domain.Entities;
 using PollsApp.Domain.Exceptions;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
@@ -9,11 +10,13 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
 {
     private readonly IPollRepository pollRepository;
     private readonly IVoteRepository voteRepository;
+    private readonly IPollRankingService pollRankingService;
 
-    public VoteCommandHandler(IPollRepository pollRepository, IVoteRepository voteRepository)
+    public VoteCommandHandler(IPollRepository pollRepository, IVoteRepository voteRepository, IPollRankingService pollRankingService)
     {
         this.pollRepository = pollRepository;
         this.voteRepository = voteRepository;
+        this.pollRankingService = pollRankingService;
     }
 
     public async Task<bool> Handle(VoteCommand request, CancellationToken cancellationToken)
@@ -42,6 +45,8 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
 
             await voteRepository.SaveAsync(vote).ConfigureAwait(false);
 
+            await pollRankingService.IncrementVoteAsync(option.PollId).ConfigureAwait(false);
+
             return true;
         }
 
@@ -52,6 +57,8 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
 
             await voteRepository.SaveAsync(existingVote).ConfigureAwait(false);
 
+            await pollRankingService.IncrementVoteAsync(option.PollId).ConfigureAwait(false);
+
             return true;
         }
 
@@ -59,6 +66,8 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
         if (option.Id == existingVote.PollOptionId)
         {
             await voteRepository.DeleteByIdAsync(existingVote.Id).ConfigureAwait(false);
+
+            await pollRankingService.DecrementVoteAsync(option.PollId).ConfigureAwait(false);
 
             return true;
         }

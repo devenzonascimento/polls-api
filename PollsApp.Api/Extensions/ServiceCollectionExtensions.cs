@@ -122,6 +122,7 @@ namespace PollsApp.Api.Extensions
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPollSearchService, PollSearchService>();
+            services.AddSingleton<IPollRankingService, PollRankingService>();
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPollRepository, PollRepository>();
