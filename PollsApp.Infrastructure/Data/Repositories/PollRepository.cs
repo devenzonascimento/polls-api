@@ -177,7 +177,9 @@ public class PollRepository : BaseRepository<PollRepository, IPollRepository>, I
                 po.id = v.poll_option_id
             WHERE
                 po.poll_id = ANY(@pollsIds)
-            GROUP BY po.id
+            GROUP BY
+                po.id
+            ORDER BY po.poll_id, po.order ASC
         ";
 
         var pollsDictionary = new Dictionary<Guid, List<PollOptionSummary>>();
