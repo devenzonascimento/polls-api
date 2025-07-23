@@ -1,6 +1,7 @@
 ﻿using Hangfire;
 using PollsApp.Api.Extensions;
 using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,9 +35,27 @@ app.RunMigrations();
 if (app.Environment.IsDevelopment())
     app.UseDevSwagger();
 
+app.UseSerilogRequestLogging(options =>
+{
+    options.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        var status = httpContext.Response.StatusCode;
+
+        // Se houve exception ou 5xx -> Error
+        if (ex != null || status >= 500)
+            return LogEventLevel.Error;
+
+        // Se 4xx -> Error em vez de Warning/Information
+        if (status >= 400)
+            return LogEventLevel.Error;
+
+        // Caso contrário -> Info
+        return LogEventLevel.Information;
+    };
+});
+
 app.UseHangfireDashboard("/hangfire");
 app.LoadRecurrentJobs();
-app.UseSerilogRequestLogging();
 app.AddMiddlewares();
 app.UseAuthentication();
 app.UseAuthorization();
