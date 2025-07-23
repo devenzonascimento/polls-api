@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
+using PollsApp.Application.Behaviors;
 using PollsApp.Application.Jobs;
 using PollsApp.Application.Services;
 using PollsApp.Application.Services.Interfaces;
@@ -112,10 +113,12 @@ namespace PollsApp.Api.Extensions
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             // MediatR
-            services.AddMediatR(cfg =>
+            services.AddMediatR(config =>
             {
-                cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
-                cfg.RegisterServicesFromAssembly(typeof(AuthService).Assembly);
+                config.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
+                config.RegisterServicesFromAssembly(typeof(AuthService).Assembly);
+
+                config.AddOpenBehavior(typeof(RequestLoggingPipelineBehavior<,>));
             });
 
             services.AddScoped<PollsJobs>();

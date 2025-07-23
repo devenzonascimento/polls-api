@@ -19,6 +19,7 @@ namespace PollsApp.Api.Extensions
         public static void AddMiddlewares(this WebApplication app)
         {
             app.UseMiddleware<ErrorHandlingMiddleware>();
+            app.UseMiddleware<RequestLogContextMiddleware>();
         }
 
         public static void LoadRecurrentJobs(this WebApplication app)

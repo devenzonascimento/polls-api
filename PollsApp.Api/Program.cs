@@ -10,6 +10,10 @@ builder.Configuration
     .AddJsonFile($"Config/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+builder.Host.UseSerilog((context, loggerConfig) =>
+    loggerConfig.ReadFrom.Configuration(context.Configuration)
+);
+
 // 1) Registrar serviços
 builder.Services
     .AddDatabase(builder.Configuration)
@@ -20,14 +24,6 @@ builder.Services
     .AddJwtAuthentication(builder.Configuration)
     .AddApplicationServices()
     .AddSwaggerWithControllers();
-
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .CreateLogger();
-builder.Logging.AddSerilog();
-builder.Host.UseSerilog();
 
 var app = builder.Build();
 
@@ -40,7 +36,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHangfireDashboard("/hangfire");
 app.LoadRecurrentJobs();
-
+app.UseSerilogRequestLogging();
 app.AddMiddlewares();
 app.UseAuthentication();
 app.UseAuthorization();
