@@ -25,8 +25,8 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # 2) Expoe a porta padrao
-ENV ASPNETCORE_URLS=http://+:5232
-EXPOSE 5232
+ENV ASPNETCORE_URLS=http://+:5000
+EXPOSE 5000
 
 # 3) Ambiente = Production
 ENV ASPNETCORE_ENVIRONMENT=Production

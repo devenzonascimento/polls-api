@@ -76,7 +76,8 @@ Uma API de enquetes e votações desenvolvida em C# .NET 8, que permite criar en
 3. **Subir os containers**
 
    ```bash
-   docker compose up -d
+   docker compose build
+   docker compose up -d --scale api=<numero de instancias do servidor>
    ```
 
    Isso vai criar serviços:
@@ -84,7 +85,16 @@ Uma API de enquetes e votações desenvolvida em C# .NET 8, que permite criar en
    * **postgres** (5432)
    * **redis** (6379)
    * **opensearch** (9200) + **dashboards** (5601)
-   * **api** (5232)
+   * **load-balancer** (5000)
+
+   OBS: Para ambiente de desenvolvimento não subir as instancias de api e load-balancer
+   para evitar conflito entre as portas, resumindo subir apenas os container de serviços
+
+4. **Observar os logs das instancias**
+
+   ```bash
+   docker compose logs -f api
+   ```   
 
 ---
 
@@ -96,9 +106,9 @@ dotnet build
 dotnet run
 ```
 
-Por padrão ouvirá em `http://localhost:5232`.
+Por padrão ouvirá em `http://localhost:5000`.
 
-* **Swagger UI**: `http://localhost:5232/swagger`
+* **Swagger UI**: `http://localhost:5000/swagger`
 
 ---
 
@@ -138,7 +148,7 @@ Por padrão ouvirá em `http://localhost:5232`.
 
 ### 🔧 Hangfire
 
-* Dashboard: `http://localhost:5232/hangfire`
+* Dashboard: `http://localhost:5000/hangfire`
 * Jobs recorrentes: fechamento automático de enquetes (`Cron.Minutely`).
 
 ---
