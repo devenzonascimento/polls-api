@@ -126,6 +126,7 @@ Por padrão ouvirá em `http://localhost:5000`.
 | GET    | `/api/polls/search`        | Buscar por texto/status             |
 | GET    | `/api/polls/top-ranking`   | Top N enquetes mais votadas (Redis) |
 | POST   | `/api/votes?optionId={id}` | Votar em opção                      |
+| GET    | `/api/comments/{id}`       | Listar comentários de uma enquete   |
 | POST   | `/api/comments`            | Criar comentário                    |
 | POST   | `/api/comments/reply`      | Responder comentário                |
 | PUT    | `/api/comments/edit`       | Editar comentário                   |

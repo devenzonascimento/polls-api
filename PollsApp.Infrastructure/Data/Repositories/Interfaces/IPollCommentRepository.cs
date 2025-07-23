@@ -1,4 +1,5 @@
-﻿using PollsApp.Domain.Entities;
+﻿using PollsApp.Domain.Aggregates;
+using PollsApp.Domain.Entities;
 
 namespace PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
@@ -8,5 +9,5 @@ public interface IPollCommentRepository : IBaseRepository<IPollCommentRepository
     Task UpdateAsync(PollComment pollComment);
     Task<PollComment?> GetByIdAsync(Guid commentId);
     Task<IEnumerable<PollComment>> GetAllCommentReplies(Guid commentId);
-    Task<IEnumerable<PollComment>> GetCommentsByPollAsync(Guid pollId);
+    Task<IEnumerable<CommentSummary>> GetCommentsByPollAsync(Guid pollId);
 }

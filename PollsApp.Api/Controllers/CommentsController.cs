@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using PollsApp.Api.DTOs.Comments;
 using PollsApp.Api.Extensions;
 using PollsApp.Application.Commands;
+using PollsApp.Application.Queries;
 
 namespace PollsApp.Api.Controllers;
 
@@ -17,6 +18,16 @@ public class CommentsController : ControllerBase
     public CommentsController(IMediator mediator)
     {
         this.mediator = mediator;
+    }
+
+    [HttpGet("{pollId}")]
+    public async Task<IActionResult> GetCommentsByPollId([FromRoute] Guid pollId)
+    {
+        var query = new GetCommentsByPollIdQuery(pollId);
+
+        var comments = await mediator.Send(query).ConfigureAwait(false);
+
+        return Ok(comments);
     }
 
     [HttpPost]

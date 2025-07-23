@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using Dapper.Contrib.Extensions;
+using PollsApp.Domain.Aggregates;
 using PollsApp.Domain.Entities;
 using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 
@@ -35,13 +36,30 @@ public class PollCommentRepository : BaseRepository<PollCommentRepository, IPoll
         return pollCommentDao.Select(c => c.Export());
     }
 
-    public async Task<IEnumerable<PollComment>> GetCommentsByPollAsync(Guid pollId)
+    public async Task<IEnumerable<CommentSummary>> GetCommentsByPollAsync(Guid pollId)
     {
-        var sql = "SELECT * FROM poll_comments p WHERE p.poll_id = @pollId AND p.is_deleted = FALSE";
+        var sql = $@"
+            SELECT
+                pc.id as CommentId,
+                pc.text as Text,
+                pc.is_edited as IsEdited,
+                pc.reply_to as ReplyToCommentId,
+                pc.created_at as CreatedAt,
+                u.id as AuthorId,
+                u.username as AuthorUsername
+            FROM
+                poll_comments pc
+            INNER JOIN
+                users u ON pc.created_by = u.id
+            WHERE
+                pc.poll_id = @pollId
+                AND pc.is_deleted = FALSE
+                AND u.is_deleted = FALSE
+            ORDER BY
+                pc.created_at DESC
+        ";
 
-        var pollCommentDao = await Connection.QueryAsync<PollCommentDao>(sql, new { pollId }, Transaction).ConfigureAwait(false);
-
-        return pollCommentDao.Select(c => c.Export());
+        return await Connection.QueryAsync<CommentSummary>(sql, new { pollId }, Transaction).ConfigureAwait(false);
     }
 }
 
