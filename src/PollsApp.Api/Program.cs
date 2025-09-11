@@ -62,3 +62,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+/// <summary>
+/// Declaração necessaria para obter referencia no projeto de testes de integração.
+/// </summary>
+public partial class Program { }
