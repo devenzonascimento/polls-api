@@ -1,27 +1,20 @@
 ﻿using Hangfire;
 using Microsoft.Extensions.Logging;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 using PollsApp.Infrastructure.Events.Interfaces;
 
 namespace PollsApp.Application.Jobs;
 
-public class PollsJobs
+public class PollsJobs(IUnitOfWork unitOfWork, IDomainEventDispatcher domainEventDispatcher, ILogger<PollsJobs> logger)
 {
-    private readonly IPollRepository pollRepository;
-    private readonly IDomainEventDispatcher domainEventDispatcher;
-    private readonly ILogger<PollsJobs> logger;
-
-    public PollsJobs(IPollRepository pollRepository, IDomainEventDispatcher domainEventDispatcher, ILogger<PollsJobs> logger)
-    {
-        this.pollRepository = pollRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
-        this.logger = logger;
-    }
+    private readonly IUnitOfWork unitOfWork = unitOfWork;
+    private readonly IDomainEventDispatcher domainEventDispatcher = domainEventDispatcher;
+    private readonly ILogger<PollsJobs> logger = logger;
 
     [AutomaticRetry(Attempts = 2)]
     public async Task CloseExpiredPollsAsync()
     {
-        var polls = await pollRepository.GetExpiredPollsAsync().ConfigureAwait(false);
+        var polls = await unitOfWork.PollRepository.GetExpiredPollsAsync().ConfigureAwait(false);
 
         foreach (var poll in polls)
         {
@@ -35,7 +28,7 @@ public class PollsJobs
 
             poll.Close();
 
-            await pollRepository.UpdateAsync(poll).ConfigureAwait(false);
+            await unitOfWork.PollRepository.UpdateAsync(poll).ConfigureAwait(false);
 
             logger.LogInformation("Poll {PollId} closed successfully", poll.Id);
 

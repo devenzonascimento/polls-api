@@ -1,20 +1,17 @@
 ﻿using MediatR;
 using PollsApp.Domain.Aggregates;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 
 namespace PollsApp.Application.Queries.Handlers;
 
-public class GetAllPollsQueryHandler : IRequestHandler<GetAllPollsQuery, IEnumerable<PollSummary>>
+public class GetAllPollsQueryHandler(
+    IUnitOfWork unitOfWork
+) : IRequestHandler<GetAllPollsQuery, IEnumerable<PollSummary>>
 {
-    private readonly IPollRepository pollRepository;
-
-    public GetAllPollsQueryHandler(IPollRepository pollRepository)
-    {
-        this.pollRepository = pollRepository;
-    }
+    private readonly IUnitOfWork unitOfWork = unitOfWork;
 
     public async Task<IEnumerable<PollSummary>> Handle(GetAllPollsQuery request, CancellationToken cancellationToken)
     {
-        return await pollRepository.GetPollsSummariesAsync().ConfigureAwait(false);
+        return await unitOfWork.PollRepository.GetPollsSummariesAsync().ConfigureAwait(false);
     }
 }

@@ -1,6 +1,4 @@
 ﻿using PollsApp.Application.Commands;
-using Dapper;
-using PollsApp.Infrastructure.Data.Repositories;
 using PollsApp.IntegrationTests.Abstractions;
 
 namespace PollsApp.IntegrationTests.Tests;
@@ -23,10 +21,7 @@ public class PollsTest(IntegrationTestWebAppFactory factory) : BaseIntegrationTe
 
         var savedPollId = await Sender.Send(command);
 
-        var savedPoll = await DbConnection.QueryAsync<PollDao>(
-            sql: "SELECT * FROM polls p WHERE p.id = @id",
-            param: new { id = savedPollId }
-        );
+        var savedPoll = await UnitOfWork.PollRepository.GetByIdAsync(savedPollId);
 
         Assert.NotNull(savedPoll);
     }

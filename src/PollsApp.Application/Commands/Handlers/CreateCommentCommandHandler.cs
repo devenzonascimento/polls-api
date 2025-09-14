@@ -1,32 +1,22 @@
 ﻿using MediatR;
-using OpenSearch.Client;
 using PollsApp.Domain.Entities;
 using PollsApp.Domain.Exceptions;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 using PollsApp.Infrastructure.Events.Interfaces;
 
 namespace PollsApp.Application.Commands.Handlers;
 
-public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand, Guid>
+public class CreateCommentCommandHandler(
+    IUnitOfWork unitOfWork,
+    IDomainEventDispatcher domainEventDispatcher
+) : IRequestHandler<CreateCommentCommand, Guid>
 {
-    private readonly IPollRepository pollRepository;
-    private readonly IPollCommentRepository pollCommentRepository;
-    private readonly IDomainEventDispatcher domainEventDispatcher;
-
-    public CreateCommentCommandHandler(
-        IPollRepository pollRepository,
-        IPollCommentRepository pollCommentRepository,
-        IDomainEventDispatcher domainEventDispatcher
-    )
-    {
-        this.pollRepository = pollRepository;
-        this.pollCommentRepository = pollCommentRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
-    }
+    private readonly IUnitOfWork unitOfWork = unitOfWork;
+    private readonly IDomainEventDispatcher domainEventDispatcher = domainEventDispatcher;
 
     public async Task<Guid> Handle(CreateCommentCommand request, CancellationToken cancellationToken)
     {
-        var poll = await pollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false);
+        var poll = await unitOfWork.PollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false);
 
         if (poll == null || poll.IsDeleted)
             throw new NotFoundException("Poll", request.PollId);
@@ -40,7 +30,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
             request.UserId
         );
 
-        await pollCommentRepository.InsertAsync(comment).ConfigureAwait(false);
+        await unitOfWork.PollCommentRepository.InsertAsync(comment).ConfigureAwait(false);
 
         await domainEventDispatcher.Dispatch(comment.Events).ConfigureAwait(false);
 

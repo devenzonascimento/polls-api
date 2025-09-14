@@ -1,6 +1,6 @@
 ﻿using PollsApp.Domain.Entities;
 
-namespace PollsApp.Infrastructure.Data.Repositories.Interfaces;
+namespace PollsApp.Domain.Repositories;
 
 public interface IUserRepository : IBaseRepository<IUserRepository>
 {

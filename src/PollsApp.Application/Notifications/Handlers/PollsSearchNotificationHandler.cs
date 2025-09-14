@@ -2,7 +2,7 @@
 using MediatR;
 using PollsApp.Application.Services.Interfaces;
 using PollsApp.Domain.Events;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 using PollsApp.Infrastructure.Data.Search.Documents;
 
 namespace PollsApp.Application.Notifications.Handlers;
@@ -13,18 +13,18 @@ public class PollsSearchNotificationHandler :
     INotificationHandler<PollClosedDomainEvent>,
     INotificationHandler<PollDeletedDomainEvent>
 {
-    private readonly IPollRepository pollRepository;
+    private readonly IUnitOfWork unitOfWork;
     private readonly IBackgroundJobClient jobClient;
 
-    public PollsSearchNotificationHandler(IPollRepository pollRepository, IBackgroundJobClient jobClient)
+    public PollsSearchNotificationHandler(IUnitOfWork unitOfWork, IBackgroundJobClient jobClient)
     {
-        this.pollRepository = pollRepository;
+        this.unitOfWork = unitOfWork;
         this.jobClient = jobClient;
     }
 
     public async Task Handle(PollCreatedDomainEvent notification, CancellationToken cancellationToken)
     {
-        var options = await pollRepository.GetOptionsByPollIdAsync(notification.Poll.Id).ConfigureAwait(false);
+        var options = await unitOfWork.PollRepository.GetOptionsByPollIdAsync(notification.Poll.Id).ConfigureAwait(false);
 
         var pollDocument = new PollDocument(notification.Poll, options);
 
@@ -33,7 +33,7 @@ public class PollsSearchNotificationHandler :
 
     public async Task Handle(PollUpdatedDomainEvent notification, CancellationToken cancellationToken)
     {
-        var options = await pollRepository.GetOptionsByPollIdAsync(notification.Poll.Id).ConfigureAwait(false);
+        var options = await unitOfWork.PollRepository.GetOptionsByPollIdAsync(notification.Poll.Id).ConfigureAwait(false);
 
         var pollDocument = new PollDocument(notification.Poll, options);
 
@@ -42,7 +42,7 @@ public class PollsSearchNotificationHandler :
 
     public async Task Handle(PollClosedDomainEvent notification, CancellationToken cancellationToken)
     {
-        var options = await pollRepository.GetOptionsByPollIdAsync(notification.Poll.Id).ConfigureAwait(false);
+        var options = await unitOfWork.PollRepository.GetOptionsByPollIdAsync(notification.Poll.Id).ConfigureAwait(false);
 
         var pollDocument = new PollDocument(notification.Poll, options);
 

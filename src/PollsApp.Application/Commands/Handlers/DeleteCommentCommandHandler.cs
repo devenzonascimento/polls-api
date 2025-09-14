@@ -1,36 +1,27 @@
 ﻿using MediatR;
 using PollsApp.Domain.Entities;
 using PollsApp.Domain.Exceptions;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 using PollsApp.Infrastructure.Events.Interfaces;
 
 namespace PollsApp.Application.Commands.Handlers;
 
-public class DeleteCommentCommandHandler : IRequestHandler<DeleteCommentCommand, bool>
+public class DeleteCommentCommandHandler(
+    IUnitOfWork unitOfWork,
+    IDomainEventDispatcher domainEventDispatcher
+) : IRequestHandler<DeleteCommentCommand, bool>
 {
-    private readonly IPollRepository pollRepository;
-    private readonly IPollCommentRepository pollCommentRepository;
-    private readonly IDomainEventDispatcher domainEventDispatcher;
-
-    public DeleteCommentCommandHandler(
-        IPollRepository pollRepository,
-        IPollCommentRepository pollCommentRepository,
-        IDomainEventDispatcher domainEventDispatcher
-    )
-    {
-        this.pollRepository = pollRepository;
-        this.pollCommentRepository = pollCommentRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
-    }
+    private readonly IUnitOfWork unitOfWork = unitOfWork;
+    private readonly IDomainEventDispatcher domainEventDispatcher = domainEventDispatcher;
 
     public async Task<bool> Handle(DeleteCommentCommand request, CancellationToken cancellationToken)
     {
-        var comment = await pollCommentRepository.GetByIdAsync(request.CommentId).ConfigureAwait(false);
+        var comment = await unitOfWork.PollCommentRepository.GetByIdAsync(request.CommentId).ConfigureAwait(false);
 
         if (comment == null || comment.IsDeleted)
             throw new ArgumentException($"Comment with ID {request.CommentId} not found.");
 
-        var poll = await pollRepository.GetByIdAsync(comment.PollId).ConfigureAwait(false);
+        var poll = await unitOfWork.PollRepository.GetByIdAsync(comment.PollId).ConfigureAwait(false);
 
         if (poll == null || poll.IsDeleted)
             throw new NotFoundException("Poll", comment.PollId);
@@ -43,7 +34,7 @@ public class DeleteCommentCommandHandler : IRequestHandler<DeleteCommentCommand,
         comment.MarkAsDeleted(request.UserId);
         deletedCommentsToUpdate.Add(comment);
 
-        var commentReplies = await pollCommentRepository.GetAllCommentReplies(comment.Id).ConfigureAwait(false);
+        var commentReplies = await unitOfWork.PollCommentRepository.GetAllCommentReplies(comment.Id).ConfigureAwait(false);
 
         foreach (var commentReply in commentReplies)
         {
@@ -51,13 +42,13 @@ public class DeleteCommentCommandHandler : IRequestHandler<DeleteCommentCommand,
             deletedCommentsToUpdate.Add(commentReply);
         }
 
-        using var transaction = pollCommentRepository.StartTransaction();
+        using var transaction = unitOfWork.PollCommentRepository.StartTransaction();
 
         try
         {
             foreach (var deletedCommentToUpdate in deletedCommentsToUpdate)
             {
-                await pollCommentRepository.WithTransaction(transaction).UpdateAsync(deletedCommentToUpdate).ConfigureAwait(false);
+                await unitOfWork.PollCommentRepository.WithTransaction(transaction).UpdateAsync(deletedCommentToUpdate).ConfigureAwait(false);
             }
 
             transaction.Commit();

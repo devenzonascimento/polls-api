@@ -1,36 +1,26 @@
 ﻿using MediatR;
-using PollsApp.Domain.Entities;
 using PollsApp.Domain.Exceptions;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 using PollsApp.Infrastructure.Events.Interfaces;
 
 namespace PollsApp.Application.Commands.Handlers;
 
-public class ReplyCommentCommandHandler : IRequestHandler<ReplyCommentCommand, Guid>
+public class ReplyCommentCommandHandler(
+    IUnitOfWork unitOfWork,
+    IDomainEventDispatcher domainEventDispatcher
+) : IRequestHandler<ReplyCommentCommand, Guid>
 {
-    private readonly IPollRepository pollRepository;
-    private readonly IPollCommentRepository pollCommentRepository;
-    private readonly IDomainEventDispatcher domainEventDispatcher;
-
-    public ReplyCommentCommandHandler(
-        IPollRepository pollRepository,
-        IPollCommentRepository pollCommentRepository,
-        IDomainEventDispatcher domainEventDispatcher
-    )
-    {
-        this.pollRepository = pollRepository;
-        this.pollCommentRepository = pollCommentRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
-    }
+    private readonly IUnitOfWork unitOfWork = unitOfWork;
+    private readonly IDomainEventDispatcher domainEventDispatcher = domainEventDispatcher;
 
     public async Task<Guid> Handle(ReplyCommentCommand request, CancellationToken cancellationToken)
     {
-        var commentToReply = await pollCommentRepository.GetByIdAsync(request.CommentIdToReply).ConfigureAwait(false);
+        var commentToReply = await unitOfWork.PollCommentRepository.GetByIdAsync(request.CommentIdToReply).ConfigureAwait(false);
 
         if (commentToReply == null || commentToReply.IsDeleted)
             throw new ArgumentException($"Comment with ID {request.CommentIdToReply} not found.");
 
-        var poll = await pollRepository.GetByIdAsync(commentToReply.PollId).ConfigureAwait(false);
+        var poll = await unitOfWork.PollRepository.GetByIdAsync(commentToReply.PollId).ConfigureAwait(false);
 
         if (poll == null || poll.IsDeleted)
             throw new NotFoundException("Poll", commentToReply.PollId);
@@ -40,7 +30,7 @@ public class ReplyCommentCommandHandler : IRequestHandler<ReplyCommentCommand, G
 
         var replyComment = commentToReply.Reply(request.Comment, request.UserId);
 
-        await pollCommentRepository.InsertAsync(replyComment).ConfigureAwait(false);
+        await unitOfWork.PollCommentRepository.InsertAsync(replyComment).ConfigureAwait(false);
 
         await domainEventDispatcher.Dispatch(replyComment.Events).ConfigureAwait(false);
 

@@ -2,31 +2,26 @@
 using PollsApp.Application.Services.Interfaces;
 using PollsApp.Domain.Entities;
 using PollsApp.Domain.Exceptions;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 
 namespace PollsApp.Application.Commands.Handlers;
 
-public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
+public class VoteCommandHandler(
+    IUnitOfWork unitOfWork,
+    IPollRankingService pollRankingService
+) : IRequestHandler<VoteCommand, bool>
 {
-    private readonly IPollRepository pollRepository;
-    private readonly IVoteRepository voteRepository;
-    private readonly IPollRankingService pollRankingService;
-
-    public VoteCommandHandler(IPollRepository pollRepository, IVoteRepository voteRepository, IPollRankingService pollRankingService)
-    {
-        this.pollRepository = pollRepository;
-        this.voteRepository = voteRepository;
-        this.pollRankingService = pollRankingService;
-    }
+    private readonly IUnitOfWork unitOfWork = unitOfWork;
+    private readonly IPollRankingService pollRankingService = pollRankingService;
 
     public async Task<bool> Handle(VoteCommand request, CancellationToken cancellationToken)
     {
-        var option = await pollRepository.GetOptionByIdAsync(request.OptionId).ConfigureAwait(false);
+        var option = await unitOfWork.PollRepository.GetOptionByIdAsync(request.OptionId).ConfigureAwait(false);
 
         if (option == null)
             throw new ArgumentException("Option not found.");
 
-        var poll = await pollRepository.GetByIdAsync(option.PollId).ConfigureAwait(false);
+        var poll = await unitOfWork.PollRepository.GetByIdAsync(option.PollId).ConfigureAwait(false);
 
         if (poll == null || poll.IsDeleted)
             throw new NotFoundException("Poll", option.PollId);
@@ -35,15 +30,15 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
             throw new InvalidStateException("This poll is closed.");
 
         var existingVote = poll.AllowMultiple
-            ? await voteRepository.FindUniqueVoteByOptionAsync(option.Id, request.UserId).ConfigureAwait(false)
-            : await voteRepository.FindUniqueVoteByPollAsync(option.PollId, request.UserId).ConfigureAwait(false);
+            ? await unitOfWork.VoteRepository.FindUniqueVoteByOptionAsync(option.Id, request.UserId).ConfigureAwait(false)
+            : await unitOfWork.VoteRepository.FindUniqueVoteByPollAsync(option.PollId, request.UserId).ConfigureAwait(false);
 
         // Novo voto
         if (existingVote is null)
         {
             var vote = new Vote(option.PollId, option.Id, request.UserId);
 
-            await voteRepository.SaveAsync(vote).ConfigureAwait(false);
+            await unitOfWork.VoteRepository.SaveAsync(vote).ConfigureAwait(false);
 
             await pollRankingService.IncrementVoteAsync(option.PollId).ConfigureAwait(false);
 
@@ -55,7 +50,7 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
         {
             existingVote.ChangeOption(option.Id);
 
-            await voteRepository.SaveAsync(existingVote).ConfigureAwait(false);
+            await unitOfWork.VoteRepository.SaveAsync(existingVote).ConfigureAwait(false);
 
             await pollRankingService.IncrementVoteAsync(option.PollId).ConfigureAwait(false);
 
@@ -65,7 +60,7 @@ public class VoteCommandHandler : IRequestHandler<VoteCommand, bool>
         // Removendo voto
         if (option.Id == existingVote.PollOptionId)
         {
-            await voteRepository.DeleteByIdAsync(existingVote.Id).ConfigureAwait(false);
+            await unitOfWork.VoteRepository.DeleteByIdAsync(existingVote.Id).ConfigureAwait(false);
 
             await pollRankingService.DecrementVoteAsync(option.PollId).ConfigureAwait(false);
 

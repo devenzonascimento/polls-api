@@ -2,19 +2,16 @@
 using System.Text;
 using FluentMigrator.Runner;
 using Hangfire;
-using Hangfire.Redis;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using PollsApp.Application.Behaviors;
 using PollsApp.Application.Jobs;
 using PollsApp.Application.Services;
 using PollsApp.Application.Services.Interfaces;
+using PollsApp.Domain.Repositories;
 using PollsApp.Infrastructure.Data.Repositories;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
 using PollsApp.Infrastructure.Data.Search;
 using PollsApp.Infrastructure.Events;
 using PollsApp.Infrastructure.Events.Interfaces;
@@ -127,10 +124,8 @@ namespace PollsApp.Api.Extensions
             services.AddScoped<IPollSearchService, PollSearchService>();
             services.AddSingleton<IPollRankingService, PollRankingService>();
 
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IPollRepository, PollRepository>();
-            services.AddScoped<IPollCommentRepository, PollCommentRepository>();
-            services.AddScoped<IVoteRepository, VoteRepository>();
 
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 

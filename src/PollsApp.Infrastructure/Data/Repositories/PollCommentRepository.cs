@@ -3,7 +3,7 @@ using Dapper;
 using Dapper.Contrib.Extensions;
 using PollsApp.Domain.Aggregates;
 using PollsApp.Domain.Entities;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 
 namespace PollsApp.Infrastructure.Data.Repositories;
 

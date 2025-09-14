@@ -1,6 +1,8 @@
 ﻿using System.Data;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using PollsApp.Domain.Repositories;
+using PollsApp.Infrastructure.Data.Repositories;
 using PollsApp.IntegrationTests.Seeds;
 
 namespace PollsApp.IntegrationTests.Abstractions;
@@ -10,6 +12,7 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestWebAppF
     private readonly IServiceScope _scope;
     protected readonly ISender Sender;
     protected readonly IDbConnection DbConnection;
+    protected readonly IUnitOfWork UnitOfWork;
     protected readonly TestDataSeeder DataSeeder;
 
     protected BaseIntegrationTest(IntegrationTestWebAppFactory factory)
@@ -18,6 +21,8 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestWebAppF
 
         Sender = _scope.ServiceProvider.GetRequiredService<ISender>();
         DbConnection = _scope.ServiceProvider.GetRequiredService<IDbConnection>();
+
+        UnitOfWork = new UnitOfWork(DbConnection);
         DataSeeder = new TestDataSeeder(DbConnection);
     }
 

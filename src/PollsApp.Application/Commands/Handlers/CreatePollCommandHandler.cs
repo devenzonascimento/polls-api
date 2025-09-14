@@ -1,30 +1,27 @@
 ﻿using MediatR;
 using PollsApp.Domain.Entities;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 using PollsApp.Infrastructure.Events.Interfaces;
 
 namespace PollsApp.Application.Commands.Handlers;
 
-public class CreatePollCommandHandler : IRequestHandler<CreatePollCommand, Guid>
+public class CreatePollCommandHandler(
+    IUnitOfWork unitOfWork,
+    IDomainEventDispatcher domainEventDispatcher
+) : IRequestHandler<CreatePollCommand, Guid>
 {
-    private readonly IPollRepository pollRepository;
-    private readonly IDomainEventDispatcher domainEventDispatcher;
-
-    public CreatePollCommandHandler(IPollRepository pollRepository, IDomainEventDispatcher domainEventDispatcher)
-    {
-        this.pollRepository = pollRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
-    }
+    private readonly IUnitOfWork unitOfWork = unitOfWork;
+    private readonly IDomainEventDispatcher domainEventDispatcher = domainEventDispatcher;
 
     public async Task<Guid> Handle(CreatePollCommand request, CancellationToken cancellationToken)
     {
         var poll = Poll.Create(request.Title, request.Description, request.AllowMultiple, request.UserRequesterId, request.ClosesAt);
 
-        using var transaction = pollRepository.StartTransaction();
+        using var transaction = unitOfWork.PollRepository.StartTransaction();
 
         try
         {
-            var pollRepositoryWithTransaction = pollRepository.WithTransaction(transaction);
+            var pollRepositoryWithTransaction = unitOfWork.PollRepository.WithTransaction(transaction);
 
             await pollRepositoryWithTransaction.InsertAsync(poll).ConfigureAwait(false);
 

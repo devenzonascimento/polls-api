@@ -1,24 +1,21 @@
 ﻿using MediatR;
 using PollsApp.Domain.Exceptions;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 using PollsApp.Infrastructure.Events.Interfaces;
 
 namespace PollsApp.Application.Commands.Handlers;
 
-public class DeletePollCommandHandler : IRequestHandler<DeletePollCommand, Guid>
+public class DeletePollCommandHandler(
+    IUnitOfWork unitOfWork,
+    IDomainEventDispatcher domainEventDispatcher
+) : IRequestHandler<DeletePollCommand, Guid>
 {
-    private readonly IPollRepository pollRepository;
-    private readonly IDomainEventDispatcher domainEventDispatcher;
-
-    public DeletePollCommandHandler(IPollRepository pollRepository, IDomainEventDispatcher domainEventDispatcher)
-    {
-        this.pollRepository = pollRepository;
-        this.domainEventDispatcher = domainEventDispatcher;
-    }
+    private readonly IUnitOfWork unitOfWork = unitOfWork;
+    private readonly IDomainEventDispatcher domainEventDispatcher = domainEventDispatcher;
 
     public async Task<Guid> Handle(DeletePollCommand request, CancellationToken cancellationToken)
     {
-        var poll = await pollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false);
+        var poll = await unitOfWork.PollRepository.GetByIdAsync(request.PollId).ConfigureAwait(false);
 
         if (poll == null || poll.IsDeleted)
             throw new NotFoundException("Poll", request.PollId);
@@ -31,7 +28,7 @@ public class DeletePollCommandHandler : IRequestHandler<DeletePollCommand, Guid>
 
         poll.MarkAsDeleted();
 
-        await pollRepository.SaveAsync(poll).ConfigureAwait(false);
+        await unitOfWork.PollRepository.SaveAsync(poll).ConfigureAwait(false);
 
         await domainEventDispatcher.Dispatch(poll.Events).ConfigureAwait(false);
 

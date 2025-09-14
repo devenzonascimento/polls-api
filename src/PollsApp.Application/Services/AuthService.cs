@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using PollsApp.Application.Services.Interfaces;
 using PollsApp.Domain.Entities;
-using PollsApp.Infrastructure.Data.Repositories.Interfaces;
+using PollsApp.Domain.Repositories;
 
 namespace PollsApp.Application.Services;
 
