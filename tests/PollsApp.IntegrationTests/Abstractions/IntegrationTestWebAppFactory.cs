@@ -1,15 +1,18 @@
 ﻿using System.Data;
 using FluentMigrator.Runner;
 using FluentMigrator.Runner.Processors;
+using Hangfire;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
+using PollsApp.Api.Extensions;
+using StackExchange.Redis;
 using Testcontainers.PostgreSql;
+using Testcontainers.Redis;
 
 namespace PollsApp.IntegrationTests.Abstractions;
-
 
 public class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
@@ -20,51 +23,66 @@ public class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsy
         .WithPassword("postgres")
         .Build();
 
+    private readonly RedisContainer cacheContainer = new RedisBuilder()
+        .WithImage("redis:7")
+        .Build();
+
+    // TODO: CONFIGURAR REDIS, OPENSEARCH, ETC...
+    // TODO: CRIAR TESTES MAIS COMPLEXOS
+    // TODO: ADICIONAR UM UNIT_OF_WORK PARA FACILITAR A VIDA
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((context, configBuilder) =>
+        {
+            var testConfig = new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:PostgreSql"] = dbContainer.GetConnectionString(),
+                ["ConnectionStrings:Redis"] = cacheContainer.GetConnectionString(),
+            };
+
+            configBuilder.AddInMemoryCollection(testConfig);
+        });
+
         builder.ConfigureTestServices(services =>
         {
-            var descriptor = services
-                .SingleOrDefault(s => s.ServiceType == typeof(IDbConnection));
+            List<Type> serviceTypesToRemove = [typeof(IDbConnection), typeof(IConnectionMultiplexer), typeof(IMigrationRunner)];
 
-            if (descriptor is not null)
-            {
-                services.Remove(descriptor);
-            }
-
-            var migratorDescriptors = services.Where(s =>
-                s.ServiceType == typeof(IMigrationRunner) || s.ServiceType.Name.Contains("FluentMigrator")
+            var serviceDescriptorsToRemove = services.Where(
+                s => serviceTypesToRemove.Contains(s.ServiceType)
+                    || (s.ServiceType.Namespace?.StartsWith("Hangfire") ?? false)
             ).ToList();
 
-            foreach (var migratorDescriptor in migratorDescriptors)
+            foreach (var serviceDescriptorToRemove in serviceDescriptorsToRemove)
+                services.Remove(serviceDescriptorToRemove);
+
+            var sp = services.BuildServiceProvider();
+            var configuration = sp.GetRequiredService<IConfiguration>();
+
+            if (configuration is not null)
             {
-                services.Remove(migratorDescriptor);
+                services.AddDatabase(configuration);
+                services.AddMigrations(configuration);
+                services.AddRedis(configuration);
+                services.AddHangfire(configuration);
             }
 
-            services.AddScoped<IDbConnection>(sp =>
-                new NpgsqlConnection(dbContainer.GetConnectionString())
-            );
-
+            // Necessário para a Migration rodar sem erros
             services.Configure<SelectingProcessorAccessorOptions>(options =>
             {
-                options.ProcessorId = "PostgreSQL"; // Use o id disponível!
+                options.ProcessorId = "PostgreSQL";
             });
-
-            services.AddFluentMigratorCore().ConfigureRunner(rb => rb
-                .AddPostgres()
-                .WithGlobalConnectionString(dbContainer.GetConnectionString())
-                .ScanIn(typeof(Infrastructure.Data.Migrations.CreateUsersTable).Assembly).For.Migrations()
-            );
         });
     }
 
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
-        return dbContainer.StartAsync();
+        await cacheContainer.StartAsync();
+        await dbContainer.StartAsync();
     }
 
-    public new Task DisposeAsync()
+    public async Task DisposeAsync()
     {
-        return dbContainer.StopAsync();
+        await cacheContainer.StopAsync();
+        await dbContainer.StopAsync();
     }
 }
